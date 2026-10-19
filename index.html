@@ -1,0 +1,1725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade Journal</title>
+<meta name="description" content="XAUUSD trade journal: track, review, improve.">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Journal">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+  // Apply saved theme before first paint (tiny UI preference only).
+  try { var t = localStorage.getItem('tj-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+:root {
+  --bg: #f4f5f7; --card: #ffffff; --text: #1d2433; --muted: #6b7280; --border: #e3e6eb;
+  --input: #ffffff; --input-border: #cfd4dc;
+  --green: #15803d; --green-bg: #e7f6ec; --red: #c62828; --red-bg: #fdecec;
+  --blue: #1d4ed8; --blue-bg: #e8effd; --grey: #6b7280; --grey-bg: #eef0f3;
+  --amber-bg: #fff7e0; --amber: #8a5a00;
+  --grid: #e9ecf0; --shadow: 0 1px 2px rgba(16,24,40,.05);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --card: #181b21; --text: #e6e8ec; --muted: #9aa1ad; --border: #2a2f38;
+    --input: #11141a; --input-border: #353b46;
+    --green: #4ade80; --green-bg: #15301f; --red: #f87171; --red-bg: #3a1c1c;
+    --blue: #7ea6ff; --blue-bg: #1a2542; --grey: #9aa1ad; --grey-bg: #262a31;
+    --amber-bg: #33290f; --amber: #f2c86b;
+    --grid: #262b33; --shadow: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --card: #181b21; --text: #e6e8ec; --muted: #9aa1ad; --border: #2a2f38;
+  --input: #11141a; --input-border: #353b46;
+  --green: #4ade80; --green-bg: #15301f; --red: #f87171; --red-bg: #3a1c1c;
+  --blue: #7ea6ff; --blue-bg: #1a2542; --grey: #9aa1ad; --grey-bg: #262a31;
+  --amber-bg: #33290f; --amber: #f2c86b;
+  --grid: #262b33; --shadow: none;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 900px; margin: 0 auto; padding: 0 12px 80px; }
+header { padding: 18px 2px 8px; }
+h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+h2 { font-size: 16px; margin: 0 0 10px; }
+h3 { font-size: 14px; margin: 14px 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+
+nav.tabs {
+  position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  background: var(--bg); padding: 8px 0;
+}
+nav.tabs button {
+  border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 10px;
+  min-height: 42px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 2px;
+}
+nav.tabs button[aria-selected="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+:root[data-theme="dark"] nav.tabs button[aria-selected="true"] { color: #0f1115; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) nav.tabs button[aria-selected="true"] { color: #0f1115; } }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 10px 0; box-shadow: var(--shadow); }
+.hidden { display: none !important; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+
+button.btn, label.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--input-border);
+  background: var(--card); color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
+}
+button.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+button.btn.danger { color: var(--red); border-color: var(--red); }
+button.btn.small { min-height: 36px; padding: 4px 10px; font-size: 13px; }
+button.btn:disabled { opacity: .45; cursor: not-allowed; }
+:root[data-theme="dark"] button.btn.primary { color: #0f1115; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.btn.primary { color: #0f1115; } }
+
+/* Form */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 10px; }
+.grid2 .full { grid-column: 1 / -1; }
+.field label.lbl { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.field .req { color: var(--red); }
+input[type=text], input[type=date], input[type=time], input[type=number], select, textarea {
+  width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--input-border);
+  background: var(--input); color: var(--text); font: inherit; font-size: 16px;
+}
+textarea { min-height: 80px; resize: vertical; }
+input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.field.invalid input, .field.invalid select, .field.invalid .seg { border-color: var(--red); }
+.err { color: var(--red); font-size: 13px; margin-top: 3px; min-height: 0; }
+.hint { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+.inline-input { display: flex; gap: 6px; }
+.inline-input input { flex: 1; min-width: 0; }
+.inline-input button { flex: 0 0 auto; min-width: 44px; }
+
+.seg { display: inline-flex; border: 1px solid var(--input-border); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--input); color: var(--text); font: inherit; font-weight: 600; min-height: 42px; min-width: 70px; padding: 0 14px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--input-border); }
+.seg button.on-yes { background: var(--green); color: #fff; }
+.seg button.on-no { background: var(--red); color: #fff; }
+.seg button.on { background: var(--blue); color: #fff; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--input-border); background: var(--input); color: var(--text); border-radius: 999px; padding: 6px 12px; min-height: 36px; font: inherit; font-size: 14px; cursor: pointer; }
+.chip.on { background: var(--red-bg); border-color: var(--red); color: var(--red); font-weight: 600; }
+
+.step { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin: 8px 0; }
+.step.done { border-color: var(--green); }
+.step-head { display: flex; gap: 10px; align-items: flex-start; }
+.num { flex: 0 0 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--grey-bg); color: var(--muted); }
+.step.done .num { background: var(--green); color: #fff; }
+.step-text { flex: 1; min-width: 0; }
+.step-name { font-weight: 600; }
+.step-desc { color: var(--muted); font-size: 13.5px; }
+.confirm-btn { flex: 0 0 auto; min-height: 38px; border-radius: 9px; border: 1px solid var(--input-border); background: var(--input); color: var(--text); font: inherit; font-size: 13.5px; font-weight: 600; padding: 0 12px; cursor: pointer; }
+.confirm-btn.on { background: var(--green); border-color: var(--green); color: #fff; }
+:root[data-theme="dark"] .confirm-btn.on, :root[data-theme="dark"] .step.done .num, :root[data-theme="dark"] .seg button.on-yes, :root[data-theme="dark"] .seg button.on-no, :root[data-theme="dark"] .seg button.on { color: #0f1115; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .confirm-btn.on, :root:not([data-theme="light"]) .step.done .num, :root:not([data-theme="light"]) .seg button.on-yes, :root:not([data-theme="light"]) .seg button.on-no, :root:not([data-theme="light"]) .seg button.on { color: #0f1115; } }
+
+.shots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+.thumb { position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--grey-bg); cursor: zoom-in; padding: 0; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb img:not([src]) { visibility: hidden; }
+.thumb .x { position: absolute; top: 2px; right: 2px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 16px; line-height: 26px; cursor: pointer; padding: 0; }
+.upload { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px; border: 1.5px dashed var(--input-border); border-radius: 9px; color: var(--blue); font-weight: 600; font-size: 13.5px; cursor: pointer; background: transparent; }
+.upload.drag { border-color: var(--blue); background: var(--blue-bg); }
+.upload input { display: none; }
+.shot-target { outline: 2px solid var(--blue-bg); }
+
+.formbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.formbar .btn.primary { flex: 1; min-width: 160px; }
+.save-error { background: var(--red-bg); color: var(--red); border-radius: 9px; padding: 10px 12px; margin-top: 10px; font-size: 14px; }
+.edit-note { background: var(--blue-bg); color: var(--blue); border-radius: 9px; padding: 8px 12px; font-size: 13.5px; margin-bottom: 10px; }
+
+/* Dashboard */
+.reminders ul { margin: 0; padding-left: 18px; }
+.reminders li { margin: 2px 0; }
+.live-line { margin-top: 8px; font-size: 14px; color: var(--blue); font-weight: 600; }
+.live-line.stop { color: var(--red); }
+.nudge { background: var(--amber-bg); color: var(--amber); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin: 10px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+.metric { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); min-width: 0; }
+.metric .k { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.metric .v { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.metric .s { font-size: 12px; color: var(--muted); }
+.pos { color: var(--green); } .neg { color: var(--red); }
+.pvr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pvr div { border-radius: 10px; padding: 10px; }
+.pvr .n { font-size: 20px; font-weight: 700; }
+.pvr .t { font-size: 13px; }
+.pvr .good { background: var(--green-bg); color: var(--green); }
+.pvr .ok { background: var(--blue-bg); color: var(--blue); }
+.pvr .lucky { background: var(--amber-bg); color: var(--amber); }
+.pvr .lesson { background: var(--red-bg); color: var(--red); }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 14px; }
+.kv .val { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.chart { position: relative; width: 100%; min-height: 60px; }
+.chart svg { display: block; width: 100%; }
+.chart text { font-family: inherit; }
+.tip { position: absolute; pointer-events: none; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 12.5px; box-shadow: 0 4px 12px rgba(0,0,0,.12); white-space: nowrap; z-index: 2; }
+.legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.dot { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+.dot.Win { background: var(--green); } .dot.Loss { background: var(--red); } .dot.Breakeven { background: var(--grey); } .dot.Open { border: 2px solid var(--grey); }
+.empty { text-align: center; padding: 26px 14px; }
+.empty p { margin: 0 0 12px; }
+
+/* Trade log */
+.filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.filters label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.trade-head { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--grey-bg); color: var(--grey); }
+.badge.Win { background: var(--green-bg); color: var(--green); }
+.badge.Loss { background: var(--red-bg); color: var(--red); }
+.badge.session { background: var(--blue-bg); color: var(--blue); }
+.badge.mistake { background: var(--red-bg); color: var(--red); font-weight: 500; }
+.dir { font-weight: 700; }
+.pnl { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; margin-left: auto; text-align: right; }
+.pnl .r { display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.details { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 10px; margin-top: 10px; font-size: 13.5px; }
+.details .k { color: var(--muted); font-size: 12px; display: block; }
+.details .v { font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.notes { white-space: pre-wrap; margin-top: 8px; font-size: 14px; overflow-wrap: anywhere; }
+.ck-list { margin: 8px 0 0; padding: 0; list-style: none; font-size: 13.5px; }
+.ck-list li { margin: 6px 0; }
+.ck-list .mark { display: inline-block; width: 18px; font-weight: 700; }
+.ck-list .yes .mark { color: var(--green); }
+.ck-list .no .mark { color: var(--muted); }
+.card-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+/* Settings */
+.ck-edit { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin: 8px 0; }
+.ck-edit .row { flex-wrap: nowrap; }
+.ck-edit input { margin-bottom: 6px; }
+.ck-edit textarea { min-height: 56px; }
+.icon-btn { min-width: 40px; min-height: 40px; border-radius: 9px; border: 1px solid var(--input-border); background: var(--input); color: var(--text); font: inherit; cursor: pointer; }
+.icon-btn:disabled { opacity: .35; }
+.import-panel { border: 1px solid var(--blue); border-radius: 10px; padding: 12px; margin-top: 10px; background: var(--blue-bg); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin: 8px 0; }
+.check input { width: 20px; height: 20px; margin: 1px 0 0; flex: 0 0 auto; }
+
+/* Lightbox, toast, banner */
+#lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 50px 8px 12px; }
+#lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
+#lightbox .close { position: absolute; top: 8px; right: 8px; min-width: 44px; height: 44px; border-radius: 22px; border: 0; background: rgba(255,255,255,.18); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; padding: 0 14px; }
+#lightbox .cap { position: absolute; top: 14px; left: 12px; right: 120px; color: #ddd; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: #1d2433; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 600; z-index: 120; max-width: calc(100% - 32px); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+#toast.bad { background: var(--red); }
+#banner { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .filters { grid-template-columns: 1fr 1fr; }
+  .details { grid-template-columns: repeat(3, 1fr); }
+  .metric .v { font-size: 19px; }
+}
+@media (max-width: 400px) {
+  .wrap { padding: 0 8px 80px; }
+  .card { padding: 12px; }
+  nav.tabs button { font-size: 13px; }
+  .details { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Trade Journal</h1>
+    <p class="sub">XAUUSD · Track, review, improve</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="dashboard" aria-selected="true">Dashboard</button>
+    <button role="tab" data-tab="log" aria-selected="false">Trade log</button>
+    <button role="tab" data-tab="form" aria-selected="false">Log trade</button>
+    <button role="tab" data-tab="settings" aria-selected="false">Settings</button>
+  </nav>
+
+  <div id="banner" class="hidden" role="alert"></div>
+
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" role="tabpanel">
+    <div class="card reminders" id="reminders"></div>
+    <div id="backupNudge" class="nudge hidden"></div>
+    <div id="dashEmpty" class="card empty hidden">
+      <p><strong>No trades yet.</strong></p>
+      <p class="muted small">Your numbers and charts will show here once you log trades.</p>
+      <button class="btn primary" type="button" data-goto="form">Log your first trade</button>
+    </div>
+    <div class="metrics" id="metrics"></div>
+    <div class="card">
+      <h2>Process vs result</h2>
+      <div class="pvr" id="pvr"></div>
+      <p class="hint">Closed wins and losses only. Judge yourself on the plan, not the result.</p>
+    </div>
+    <div class="card">
+      <h2>More numbers</h2>
+      <div class="kv" id="moreStats"></div>
+    </div>
+    <div class="card">
+      <h2 id="equityTitle">Equity curve</h2>
+      <div class="chart" id="equityChart"></div>
+    </div>
+    <div class="card">
+      <h2>Wins vs losses by session</h2>
+      <div class="chart" id="sessionChart"></div>
+    </div>
+    <div class="card">
+      <h2>Recent form <span class="muted small">(last 20, oldest → newest)</span></h2>
+      <div class="dots" id="recentDots"></div>
+      <div class="legend" style="margin-top:8px">
+        <span><i style="background:var(--green);border-radius:50%"></i>Win</span>
+        <span><i style="background:var(--red);border-radius:50%"></i>Loss</span>
+        <span><i style="background:var(--grey);border-radius:50%"></i>Breakeven</span>
+        <span><i style="border:2px solid var(--grey);border-radius:50%"></i>Open</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRADE LOG -->
+  <section id="tab-log" role="tabpanel" class="hidden">
+    <div class="card">
+      <div class="filters">
+        <div><label for="flt-outcome">Outcome</label>
+          <select id="flt-outcome"><option value="">All</option><option>Win</option><option>Loss</option><option>Breakeven</option><option>Open</option></select></div>
+        <div><label for="flt-session">Session</label>
+          <select id="flt-session"><option value="">All</option><option>London</option><option>New York</option><option>Asia</option><option>Other</option></select></div>
+        <div><label for="flt-plan">Followed plan</label>
+          <select id="flt-plan"><option value="">All</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+        <div><label for="flt-range">Date range</label>
+          <select id="flt-range"><option value="">All</option><option value="week">This week</option><option value="month">This month</option></select></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <span class="muted small" id="logCount"></span><span class="spacer"></span>
+        <button class="btn small" type="button" id="clearFilters">Clear filters</button>
+      </div>
+    </div>
+    <div id="tradeList"></div>
+  </section>
+
+  <!-- LOG TRADE FORM -->
+  <section id="tab-form" role="tabpanel" class="hidden">
+    <form id="tradeForm" novalidate autocomplete="off">
+      <div class="card">
+        <div id="editNote" class="edit-note hidden"></div>
+        <h2 id="formTitle">Log a trade</h2>
+        <div class="grid2">
+          <div class="field" data-f="date"><label class="lbl" for="f-date">Date <span class="req">*</span></label><input type="date" id="f-date"><div class="err"></div></div>
+          <div class="field" data-f="time"><label class="lbl" for="f-time">Time</label><input type="time" id="f-time"><div class="err"></div></div>
+          <div class="field" data-f="instrument"><label class="lbl" for="f-instrument">Instrument</label><input type="text" id="f-instrument" value="XAUUSD" autocapitalize="characters"><div class="err"></div></div>
+          <div class="field" data-f="session"><label class="lbl" for="f-session">Session</label>
+            <select id="f-session">
+              <option value="London">London (07:00–11:00 GMT)</option>
+              <option value="New York">New York (13:00–17:00 GMT)</option>
+              <option value="Asia">Asia (00:00–04:00 GMT)</option>
+              <option value="Other">Other</option>
+            </select><div class="err"></div></div>
+          <div class="field" data-f="direction"><label class="lbl" for="f-direction">Direction</label>
+            <select id="f-direction"><option value="Long">Long (Buy)</option><option value="Short">Short (Sell)</option></select><div class="err"></div></div>
+          <div class="field" data-f="outcome"><label class="lbl" for="f-outcome">Outcome <span class="req">*</span></label>
+            <select id="f-outcome"><option value="">Choose…</option><option>Win</option><option>Loss</option><option>Breakeven</option><option>Open</option></select><div class="err"></div></div>
+          <div class="field" data-f="entry"><label class="lbl" for="f-entry">Entry price <span class="req">*</span></label><input type="text" inputmode="decimal" id="f-entry" placeholder="e.g. 2385.40"><div class="err"></div></div>
+          <div class="field" data-f="exit"><label class="lbl" for="f-exit">Exit price</label><input type="text" inputmode="decimal" id="f-exit" placeholder="blank while open"><div class="err"></div></div>
+          <div class="field" data-f="sl"><label class="lbl" for="f-sl">Stop loss</label><input type="text" inputmode="decimal" id="f-sl"><div class="err"></div></div>
+          <div class="field" data-f="tp"><label class="lbl" for="f-tp">Take profit</label><input type="text" inputmode="decimal" id="f-tp"><div class="err"></div></div>
+          <div class="field" data-f="lot"><label class="lbl" for="f-lot">Lot size</label><input type="text" inputmode="decimal" id="f-lot"><div class="err"></div></div>
+          <div class="field" data-f="risk"><label class="lbl" for="f-risk">Risk ($)</label><input type="text" inputmode="decimal" id="f-risk" placeholder="money at risk"><div class="err"></div></div>
+          <div class="field" data-f="pnl"><label class="lbl" for="f-pnl">P&amp;L ($)</label>
+            <div class="inline-input"><input type="text" inputmode="decimal" id="f-pnl" placeholder="e.g. 125.50"><button type="button" class="icon-btn" id="pnlSign" title="Switch plus / minus" aria-label="Switch plus or minus">±</button></div>
+            <div class="hint" id="pnlHint"></div><div class="err"></div></div>
+          <div class="field" data-f="rr"><label class="lbl" for="f-rr">R:R ratio</label><input type="text" inputmode="decimal" id="f-rr" placeholder="auto from prices"><div class="hint" id="rrHint"></div><div class="err"></div></div>
+          <div class="field" data-f="grade"><label class="lbl" for="f-grade">Setup grade</label>
+            <select id="f-grade"><option value="">—</option><option value="A+">A+ (all confluences)</option><option value="A">A (strong)</option><option value="B">B (okay)</option><option value="C">C (weak)</option></select><div class="err"></div></div>
+          <div class="field" data-f="emotion"><label class="lbl" for="f-emotion">Emotion before trade</label>
+            <select id="f-emotion"><option value="">—</option><option>Calm</option><option>Confident</option><option>Anxious</option><option>Rushed</option><option>Bored</option><option>Frustrated</option></select><div class="err"></div></div>
+          <div class="field full" data-f="followedPlan"><label class="lbl">Followed my plan? <span class="req" id="planReq">*</span></label>
+            <div class="seg" id="f-plan"><button type="button" data-v="yes">Yes</button><button type="button" data-v="no">No</button></div><div class="err"></div></div>
+          <div class="field full" data-f="mistakes"><label class="lbl">Mistakes</label><div class="chips" id="f-mistakes"></div></div>
+          <div class="field full" data-f="notes"><label class="lbl" for="f-notes">Notes / markup observations</label><textarea id="f-notes" rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Checklist</h2>
+        <p class="hint" style="margin-top:-6px">Confirm each step you saw. Add chart screenshots per step. On a laptop you can also paste a screenshot (Ctrl+V) into the highlighted area.</p>
+        <div id="f-checklist"></div>
+        <div class="step" id="generalBox">
+          <div class="step-name">General screenshots</div>
+          <div class="step-desc">Anything not tied to a step, e.g. the MT5 result.</div>
+          <div class="shots" id="f-general"></div>
+        </div>
+      </div>
+
+      <div class="formbar">
+        <button type="submit" class="btn primary" id="saveBtn">Save trade</button>
+        <button type="button" class="btn" id="cancelEdit">Clear form</button>
+      </div>
+      <div id="saveError" class="save-error hidden" role="alert"></div>
+    </form>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings" role="tabpanel" class="hidden">
+    <div class="card">
+      <h2>Appearance</h2>
+      <div class="seg" id="themeSeg"><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button><button type="button" data-v="auto">Auto</button></div>
+      <p class="hint">Auto follows your device setting.</p>
+    </div>
+
+    <div class="card">
+      <h2>Checklist steps</h2>
+      <p class="hint" style="margin-top:-6px">Changes affect new trades only. Old trades always keep the steps they were saved with. 1 to 8 steps.</p>
+      <div class="row" style="margin:8px 0">
+        <button type="button" class="btn small" id="presetA">Load preset A: ICC</button>
+        <button type="button" class="btn small" id="presetB">Load preset B: Direction → AOI → Entry</button>
+      </div>
+      <div id="ckEditor"></div>
+      <div class="row" style="margin-top:8px">
+        <button type="button" class="btn small" id="ckAdd">+ Add step</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn small" id="ckReset">Undo changes</button>
+        <button type="button" class="btn primary small" id="ckSave">Save checklist</button>
+      </div>
+      <div class="err" id="ckErr"></div>
+    </div>
+
+    <div class="card">
+      <h2>Rules and limits</h2>
+      <div class="grid2">
+        <div class="field"><label class="lbl" for="s-maxDay">Max trades per day</label><input type="text" inputmode="numeric" id="s-maxDay" placeholder="blank = hide"></div>
+        <div class="field"><label class="lbl" for="s-maxWeek">Max trades per week</label><input type="text" inputmode="numeric" id="s-maxWeek" placeholder="blank = hide"></div>
+        <div class="field"><label class="lbl" for="s-lossLimit">Daily loss limit ($)</label><input type="text" inputmode="decimal" id="s-lossLimit" placeholder="blank = hide"></div>
+        <div class="field"><label class="lbl" for="s-startBal">Starting balance ($)</label><input type="text" inputmode="decimal" id="s-startBal" placeholder="optional"></div>
+        <div class="field full"><label class="lbl" for="s-reminders">Dashboard reminders (one per line)</label><textarea id="s-reminders" rows="4"></textarea></div>
+        <div class="field full"><label class="lbl" for="s-mistakes">Mistake options (one per line)</label><textarea id="s-mistakes" rows="6"></textarea></div>
+      </div>
+      <div class="err" id="limitsErr"></div>
+      <div class="row" style="margin-top:8px"><span class="spacer"></span><button type="button" class="btn primary small" id="saveLimits">Save</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Data</h2>
+      <div class="kv" id="dataInfo"></div>
+      <h3>Backup</h3>
+      <p class="small muted" style="margin-top:0">The <strong>full backup (.json)</strong> holds everything, including screenshots. Use it to restore, or to move your journal between laptop and phone. The <strong>Excel file (.csv)</strong> is only a table of trades for your own analysis: it has no screenshots and cannot be imported back.</p>
+      <div class="row">
+        <button type="button" class="btn primary" id="exportJson">Export full backup (.json)</button>
+        <button type="button" class="btn hidden" id="shareJson">Share backup…</button>
+        <button type="button" class="btn" id="exportCsv">Export trades to Excel (.csv)</button>
+      </div>
+      <p class="small" id="exportInfo"></p>
+      <h3>Restore / move data</h3>
+      <label class="btn" for="importFile">Import backup (.json)</label>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+      <div id="importPanel" class="import-panel hidden"></div>
+      <h3>Danger zone</h3>
+      <button type="button" class="btn danger" id="wipeAll">Delete all trades and screenshots</button>
+      <p class="hint">Export a backup first. Settings and checklist are kept.</p>
+    </div>
+
+    <div class="card">
+      <h2>About</h2>
+      <p class="small" style="margin:0">Trade Journal <strong id="appVersion"></strong> · Data is stored only in this browser on this device. Automatic sync between devices is planned as a later add-on.</p>
+    </div>
+  </section>
+</div>
+
+<div id="lightbox" class="hidden" role="dialog" aria-modal="true" aria-label="Screenshot">
+  <div class="cap" id="lbCap"></div>
+  <button type="button" class="close" id="lbClose" aria-label="Close">✕ Close</button>
+  <img id="lbImg" alt="Screenshot">
+</div>
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =========================================================================
+   Constants
+   ========================================================================= */
+const APP_VERSION = '1.0';
+const SCHEMA_VERSION = 1;
+const BACKUP_APP_ID = 'xauusd-trade-journal';
+const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
+const SESSIONS = ['London', 'New York', 'Asia', 'Other'];
+const MAX_STEPS = 8;
+const IMG_MAX_SIDE = 1600;
+const IMG_QUALITY = 0.82;
+
+const PRESET_A = [
+  { name: 'Indication', description: 'New HH or LL formed on HTF (4H/1H).' },
+  { name: 'Correction', description: 'Retraced into AOI / OB / FVG zone.' },
+  { name: 'Continuation', description: 'BOS or CHOCH confirmed on LTF (5M/15M).' },
+  { name: 'Entry trigger', description: 'Momentum candle or engulfing at zone.' }
+];
+const PRESET_B = [
+  { name: 'Direction', description: 'LTF, MTF and HTF structure aligned? Market condition? Relevant timeframe candle closed in my favour?' },
+  { name: 'AOI', description: 'At previous structure? Where is the setup relative to the previous move?' },
+  { name: 'Entry model', description: 'Type 1, 2 or 3? Has MSS or CHOCH occurred?' },
+  { name: 'Confluences', description: 'DXY alignment? Time of day? Previous HTF candle close?' }
+];
+const DEFAULT_MISTAKES = ['Entered early', 'Moved stop loss', 'Oversized lot', 'Revenge trade', 'No clear setup', 'Closed too early', 'Ignored session time'];
+const DEFAULT_REMINDERS = ['Keep risk the same on every trade.', 'Probability over chasing big R:R.', 'Be patient. Stop at my loss limit.', "Follow the plan. Don't force trades."];
+
+function defaultSettings() {
+  return {
+    key: 'settings', checklist: clone(PRESET_A), mistakes: DEFAULT_MISTAKES.slice(), reminders: DEFAULT_REMINDERS.slice(),
+    maxTradesDay: null, maxTradesWeek: null, dailyLossLimit: null, startingBalance: null, theme: 'auto', updatedAt: null
+  };
+}
+
+/* =========================================================================
+   Small helpers
+   ========================================================================= */
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+function $(id) { return document.getElementById(id); }
+function uuid() {
+  if (window.crypto && crypto.randomUUID) { try { return crypto.randomUUID(); } catch (e) { /* fall through */ } }
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+// Build DOM safely: string children become text nodes, never HTML.
+function el(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) { if (c == null || c === false) continue; n.append(c.nodeType ? c : String(c)); }
+  return n;
+}
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svg(tag, attrs, text) {
+  const n = document.createElementNS(SVGNS, tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) if (v != null) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+// Dates: always the device's local calendar, never toISOString().
+function ymd(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function todayStr() { return ymd(new Date()); }
+function weekStartStr(d = new Date()) { const day = (d.getDay() + 6) % 7; return ymd(new Date(d.getFullYear(), d.getMonth(), d.getDate() - day)); }
+function monthStartStr(d = new Date()) { return ymd(new Date(d.getFullYear(), d.getMonth(), 1)); }
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function fmtDate(s, withYear = true) {
+  if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return s || '';
+  const [y, m, d] = s.split('-').map(Number);
+  return withYear ? `${d} ${MONTHS[m - 1]} ${y}` : `${d} ${MONTHS[m - 1]}`;
+}
+
+// Number display
+const MINUS = '−';
+function money(n, signed = true) {
+  if (n == null || !isFinite(n)) return '—';
+  const abs = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (Math.abs(n) < 0.005) return '$0.00';
+  if (n < 0) return `${MINUS}$${abs}`;
+  return signed ? `+$${abs}` : `$${abs}`;
+}
+function price(n) { return n == null || !isFinite(n) ? '—' : Number(n).toFixed(2); }
+function pct(x) { return x == null || !isFinite(x) ? '—' : `${(x * 100).toFixed(1)}%`; }
+function rFmt(r) { if (r == null || !isFinite(r)) return '—'; const s = Math.abs(r).toFixed(1); return r > 0.04 ? `+${s}R` : r < -0.04 ? `${MINUS}${s}R` : '0.0R'; }
+function rrFmt(rr) { return rr == null || !isFinite(rr) ? '—' : `1:${rr.toFixed(2)}`; }
+function signClass(n) { return n > 0.004 ? 'pos' : n < -0.004 ? 'neg' : ''; }
+function fmtBytes(b) { if (b == null) return '—'; if (b < 1024) return `${b} B`; if (b < 1048576) return `${(b / 1024).toFixed(1)} KB`; return `${(b / 1048576).toFixed(1)} MB`; }
+
+// Parse a typed number. '' -> null, junk -> NaN. Accepts a comma as decimal point.
+function parseNum(s) {
+  if (s == null) return null;
+  s = String(s).trim().replace(/[\s$]/g, '').replace(MINUS, '-').replace(',', '.');
+  if (s === '') return null;
+  if (!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+  return Number(s);
+}
+function numOrNull(v) { const n = typeof v === 'number' ? v : parseNum(v); return n == null || !isFinite(n) ? null : n; }
+
+/* =========================================================================
+   Pure calculations (no DOM)
+   ========================================================================= */
+// R:R from prices. Long: SL < entry < TP. Short: TP < entry < SL. Otherwise null.
+function calcRR(direction, entry, sl, tp) {
+  if (![entry, sl, tp].every(v => typeof v === 'number' && isFinite(v))) return null;
+  let risk, reward;
+  if (direction === 'Long') { if (!(sl < entry && entry < tp)) return null; risk = entry - sl; reward = tp - entry; }
+  else if (direction === 'Short') { if (!(tp < entry && entry < sl)) return null; risk = sl - entry; reward = entry - tp; }
+  else return null;
+  if (!(risk > 0) || !(reward > 0)) return null;
+  const rr = Math.round((reward / risk) * 100) / 100;
+  return isFinite(rr) && rr > 0 ? rr : null;
+}
+function effRR(t) { return t.rr != null && t.rr > 0 ? t.rr : calcRR(t.direction, t.entry, t.sl, t.tp); }
+function rMultiple(t) {
+  if (!CLOSED.has(t.outcome) || !(t.risk > 0) || t.pnl == null) return null;
+  return t.pnl / t.risk;
+}
+function sessionFromTime(hhmm) {
+  if (!/^\d{1,2}:\d{2}/.test(hhmm || '')) return null;
+  const [h, m] = hhmm.split(':').map(Number); const mins = h * 60 + m;
+  if (mins >= 420 && mins < 660) return 'London';
+  if (mins >= 780 && mins < 1020) return 'New York';
+  if (mins >= 0 && mins < 240) return 'Asia';
+  return 'Other';
+}
+function chronoCmp(a, b) {
+  return (a.date || '').localeCompare(b.date || '') || (a.time || '').localeCompare(b.time || '') || (a.createdAt || '').localeCompare(b.createdAt || '');
+}
+function fullChecklist(t) { return t.checklistConfirmed.length > 0 && t.checklistConfirmed.every(Boolean); }
+
+function computeStats(all) {
+  const live = all.filter(t => !t.deleted);
+  const closed = live.filter(t => CLOSED.has(t.outcome));
+  const wins = closed.filter(t => t.outcome === 'Win');
+  const losses = closed.filter(t => t.outcome === 'Loss');
+  const sumPnl = arr => arr.reduce((s, t) => s + (t.pnl || 0), 0);
+  const grossWin = sumPnl(wins), grossLoss = sumPnl(losses);
+  const wl = wins.length + losses.length;
+  const full = wins.concat(losses).filter(fullChecklist);
+  const rrs = live.map(effRR).filter(v => v != null);
+  const rs = closed.map(rMultiple).filter(v => v != null);
+  const mistakeCount = {};
+  live.forEach(t => t.mistakes.forEach(m => { mistakeCount[m] = (mistakeCount[m] || 0) + 1; }));
+  const topMistake = Object.entries(mistakeCount).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] || null;
+  const pv = (plan, outcome) => closed.filter(t => t.followedPlan === plan && t.outcome === outcome).length;
+  return {
+    total: live.length, closed: closed.length, open: live.length - closed.length,
+    wins: wins.length, losses: losses.length, breakevens: closed.length - wl,
+    winRate: wl ? wins.length / wl : null,
+    net: sumPnl(closed),
+    grossWin, grossLoss,
+    profitFactor: losses.length && grossLoss !== 0 ? grossWin / Math.abs(grossLoss) : null,
+    planRate: closed.length ? closed.filter(t => t.followedPlan === true).length / closed.length : null,
+    fullCount: full.length,
+    fullWinRate: full.length ? full.filter(t => t.outcome === 'Win').length / full.length : null,
+    pvr: { goodWin: pv(true, 'Win'), goodLoss: pv(true, 'Loss'), luckyWin: pv(false, 'Win'), lessonLoss: pv(false, 'Loss') },
+    avgWin: wins.length ? grossWin / wins.length : null,
+    avgLoss: losses.length ? grossLoss / losses.length : null,
+    avgRR: rrs.length ? rrs.reduce((a, b) => a + b, 0) / rrs.length : null, rrCount: rrs.length,
+    avgR: rs.length ? rs.reduce((a, b) => a + b, 0) / rs.length : null, rCount: rs.length,
+    topMistake
+  };
+}
+
+/* =========================================================================
+   Storage module (IndexedDB). All data access goes through `store`,
+   so a sync layer can wrap it later.
+   ========================================================================= */
+const store = (() => {
+  const DB_NAME = 'trade-journal', DB_VER = 1;
+  let db = null;
+  function open() {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window) || !window.indexedDB) return reject(new Error('This browser does not support IndexedDB storage.'));
+      let req;
+      try { req = indexedDB.open(DB_NAME, DB_VER); } catch (e) { return reject(e); }
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        if (!d.objectStoreNames.contains('trades')) d.createObjectStore('trades', { keyPath: 'id' });
+        if (!d.objectStoreNames.contains('shots')) d.createObjectStore('shots', { keyPath: 'id' });
+        if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta', { keyPath: 'key' });
+      };
+      req.onsuccess = () => {
+        db = req.result;
+        db.onversionchange = () => { db.close(); showBanner('The journal was updated in another tab. Please reload this page.'); };
+        resolve(db);
+      };
+      req.onerror = () => reject(req.error || new Error('Could not open storage.'));
+      req.onblocked = () => reject(new Error('Storage is blocked by another open tab of this app. Close other tabs and reload.'));
+    });
+  }
+  function reqP(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+  async function get(name, key) { return reqP(db.transaction(name).objectStore(name).get(key)); }
+  async function list(name) { return reqP(db.transaction(name).objectStore(name).getAll()); }
+  // Run several writes in ONE transaction: all succeed or none do.
+  // ops: [{op:'put'|'delete'|'clear', store, value?, key?}]
+  function batch(ops) {
+    return new Promise((resolve, reject) => {
+      const names = [...new Set(ops.map(o => o.store))];
+      if (!names.length) return resolve();
+      let tx;
+      try { tx = db.transaction(names, 'readwrite'); } catch (e) { return reject(e); }
+      tx.oncomplete = () => resolve();
+      tx.onabort = () => reject(tx.error || new Error('Saving was cancelled by the browser.'));
+      tx.onerror = (e) => { e.preventDefault(); /* abort follows */ };
+      try {
+        for (const o of ops) {
+          const s = tx.objectStore(o.store);
+          if (o.op === 'put') s.put(o.value);
+          else if (o.op === 'delete') s.delete(o.key);
+          else if (o.op === 'clear') s.clear();
+        }
+      } catch (e) { try { tx.abort(); } catch (_) {} reject(e); }
+    });
+  }
+  const put = (name, value) => batch([{ op: 'put', store: name, value }]);
+  const del = (name, key) => batch([{ op: 'delete', store: name, key }]);
+  return { open, get, put, delete: del, list, batch };
+})();
+
+/* =========================================================================
+   Record normalisation (reads old/partial data safely)
+   ========================================================================= */
+function normalizeTrade(r) {
+  const t = Object.assign({}, r);
+  t.id = String(t.id);
+  t.createdAt = t.createdAt || t.updatedAt || new Date(0).toISOString();
+  t.updatedAt = t.updatedAt || t.createdAt;
+  t.deleted = !!t.deleted;
+  t.schemaVersion = t.schemaVersion || 1;
+  t.date = typeof t.date === 'string' ? t.date : '';
+  t.time = typeof t.time === 'string' ? t.time : '';
+  t.instrument = t.instrument || 'XAUUSD';
+  t.session = SESSIONS.includes(t.session) ? t.session : 'Other';
+  t.direction = t.direction === 'Short' ? 'Short' : 'Long';
+  ['entry', 'exit', 'sl', 'tp', 'lot', 'risk', 'pnl', 'rr'].forEach(k => { t[k] = numOrNull(t[k]); });
+  t.outcome = ['Win', 'Loss', 'Breakeven', 'Open'].includes(t.outcome) ? t.outcome : 'Open';
+  t.grade = ['A+', 'A', 'B', 'C'].includes(t.grade) ? t.grade : '';
+  t.followedPlan = t.followedPlan === true ? true : t.followedPlan === false ? false : null;
+  t.mistakes = Array.isArray(t.mistakes) ? t.mistakes.filter(m => typeof m === 'string') : [];
+  t.emotion = typeof t.emotion === 'string' ? t.emotion : '';
+  t.notes = typeof t.notes === 'string' ? t.notes : '';
+  t.checklistSnapshot = Array.isArray(t.checklistSnapshot) ? t.checklistSnapshot.map(s => ({ name: String((s && s.name) || ''), description: String((s && s.description) || '') })) : [];
+  const n = t.checklistSnapshot.length;
+  const conf = Array.isArray(t.checklistConfirmed) ? t.checklistConfirmed : [];
+  t.checklistConfirmed = Array.from({ length: n }, (_, i) => !!conf[i]);
+  const ss = Array.isArray(t.stepScreenshots) ? t.stepScreenshots : [];
+  t.stepScreenshots = Array.from({ length: n }, (_, i) => Array.isArray(ss[i]) ? ss[i].map(String) : []);
+  // Screenshots attached to steps that no longer exist in the snapshot are kept as general ones (never lost).
+  const extra = ss.slice(n).flat().filter(Boolean).map(String);
+  t.generalScreenshots = (Array.isArray(t.generalScreenshots) ? t.generalScreenshots.map(String) : []).concat(extra);
+  return t;
+}
+function normalizeSettings(s) {
+  const d = defaultSettings();
+  if (!s || typeof s !== 'object') return d;
+  const out = Object.assign(d, s, { key: 'settings' });
+  out.checklist = Array.isArray(s.checklist) && s.checklist.length ? s.checklist.slice(0, MAX_STEPS).map(x => ({ name: String(x.name || ''), description: String(x.description || '') })) : clone(PRESET_A);
+  out.mistakes = Array.isArray(s.mistakes) ? s.mistakes.map(String) : DEFAULT_MISTAKES.slice();
+  out.reminders = Array.isArray(s.reminders) ? s.reminders.map(String) : DEFAULT_REMINDERS.slice();
+  ['maxTradesDay', 'maxTradesWeek', 'dailyLossLimit', 'startingBalance'].forEach(k => { out[k] = numOrNull(out[k]); });
+  if (!['light', 'dark', 'auto'].includes(out.theme)) out.theme = 'auto';
+  return out;
+}
+function shotIdsOf(t) { return t.stepScreenshots.flat().concat(t.generalScreenshots); }
+
+/* =========================================================================
+   App state
+   ========================================================================= */
+let trades = [];          // normalised, includes deleted tombstones
+let settings = defaultSettings();
+let device = { key: 'device', lastBackupAt: null };
+const urlCache = new Map();  // shot id -> object URL
+const pendingBlobs = new Map(); // shot id -> Blob (not yet saved)
+
+function liveTrades() { return trades.filter(t => !t.deleted); }
+
+async function loadAll() {
+  const [tr, s, dv] = await Promise.all([store.list('trades'), store.get('meta', 'settings'), store.get('meta', 'device')]);
+  trades = tr.map(normalizeTrade);
+  settings = normalizeSettings(s);
+  device = Object.assign({ key: 'device', lastBackupAt: null }, dv || {});
+}
+async function saveSettings(patch, markEdited = true) {
+  const next = Object.assign({}, settings, patch);
+  if (markEdited) next.updatedAt = new Date().toISOString();
+  await store.put('meta', next);
+  settings = next;
+}
+async function saveDevice(patch) {
+  const next = Object.assign({}, device, patch);
+  await store.put('meta', next);
+  device = next;
+}
+
+/* =========================================================================
+   UI basics: tabs, toast, banner, errors
+   ========================================================================= */
+let currentTab = 'dashboard';
+function showTab(name) {
+  currentTab = name;
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  ['dashboard', 'log', 'form', 'settings'].forEach(n => $('tab-' + n).classList.toggle('hidden', n !== name));
+  if (name === 'dashboard') renderCharts();
+  if (name === 'settings') renderDataInfo();
+  window.scrollTo(0, 0);
+}
+let toastTimer = null;
+function toast(msg, bad = false) {
+  const t = $('toast'); t.textContent = msg; t.className = bad ? 'bad' : '';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add('hidden'), bad ? 5000 : 2600);
+}
+function showBanner(msg) { const b = $('banner'); b.textContent = msg; b.classList.remove('hidden'); }
+function storageAdvice(err) {
+  const name = (err && err.name) || '';
+  const msg = (err && err.message) || String(err);
+  if (name === 'QuotaExceededError' || /quota|space/i.test(msg)) return 'Storage full: export a backup, then remove old screenshots or trades to free space.';
+  return `Storage error: ${msg}. Your entry is still on screen. Try again, and export a backup if this keeps happening.`;
+}
+
+/* =========================================================================
+   Screenshots: compression, display, lightbox
+   ========================================================================= */
+function loadImage(url) {
+  return new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = () => rej(new Error('Could not read this image.')); img.src = url; });
+}
+async function compressImage(file) {
+  if (!/^image\/(png|jpe?g|webp)$/i.test(file.type)) throw new Error(`"${file.name || 'file'}" is not a PNG, JPG or WebP image.`);
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url);
+    const w0 = img.naturalWidth, h0 = img.naturalHeight;
+    const scale = Math.min(1, IMG_MAX_SIDE / Math.max(w0, h0));
+    const w = Math.max(1, Math.round(w0 * scale)), h = Math.max(1, Math.round(h0 * scale));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', IMG_QUALITY));
+    if (!blob) throw new Error('Could not compress this image.');
+    // Keep the original if it is already small and within size limits.
+    if (scale === 1 && /jpe?g|webp/i.test(file.type) && file.size <= blob.size) return file;
+    return blob;
+  } finally { URL.revokeObjectURL(url); }
+}
+async function shotUrl(id) {
+  if (urlCache.has(id)) return urlCache.get(id);
+  const blob = pendingBlobs.get(id) || ((await store.get('shots', id)) || {}).blob;
+  if (!blob) return null;
+  const u = URL.createObjectURL(blob); urlCache.set(id, u); return u;
+}
+function forgetShot(id) { const u = urlCache.get(id); if (u) URL.revokeObjectURL(u); urlCache.delete(id); pendingBlobs.delete(id); }
+
+const lazyObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { lazyObserver.unobserve(e.target); fillThumb(e.target); } });
+}, { rootMargin: '200px' }) : null;
+async function fillThumb(img) {
+  try {
+    const u = await shotUrl(img.dataset.shot);
+    if (u) img.src = u; else { img.alt = 'Missing image'; img.parentElement.title = 'This screenshot could not be found'; }
+  } catch (e) { img.alt = 'Error'; }
+}
+function thumb(id, caption, onRemove) {
+  const img = el('img', { alt: caption || 'Screenshot', 'data-shot': id });
+  const box = el('div', { class: 'thumb', role: 'button', tabindex: '0', title: 'Open full screen', onclick: () => openLightbox(id, caption),
+    onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(id, caption); } } }, img);
+  if (onRemove) box.append(el('button', { type: 'button', class: 'x', 'aria-label': 'Remove screenshot', title: 'Remove', onclick: e => { e.stopPropagation(); onRemove(); } }, '×'));
+  if (lazyObserver) lazyObserver.observe(img); else fillThumb(img);
+  return box;
+}
+let lbReturnFocus = null;
+async function openLightbox(id, caption) {
+  const u = await shotUrl(id);
+  if (!u) { toast('This screenshot could not be found.', true); return; }
+  lbReturnFocus = document.activeElement;
+  $('lbImg').src = u; $('lbCap').textContent = caption || '';
+  $('lightbox').classList.remove('hidden'); $('lbClose').focus();
+}
+function closeLightbox() {
+  $('lightbox').classList.add('hidden'); $('lbImg').removeAttribute('src');
+  if (lbReturnFocus && lbReturnFocus.focus) lbReturnFocus.focus();
+}
+
+/* =========================================================================
+   Log trade form
+   ========================================================================= */
+let draft = null;
+// draft: { editingId, original, checklist:[{name,description}], confirmed:[], stepShots:[[id]], generalShots:[id],
+//          followedPlan, mistakes:Set, sessionTouched, dirty, shotTarget }
+
+const F = id => $('f-' + id);
+function newDraft(checklist) {
+  return { editingId: null, original: null, checklist: clone(checklist || settings.checklist), confirmed: [], stepShots: [], generalShots: [],
+    followedPlan: null, mistakes: new Set(), sessionTouched: false, dirty: false, shotTarget: -1 };
+}
+function resetForm() {
+  // Free memory of unsaved images.
+  if (draft) draftShotIds().forEach(id => { if (pendingBlobs.has(id)) forgetShot(id); });
+  draft = newDraft();
+  draft.confirmed = draft.checklist.map(() => false);
+  draft.stepShots = draft.checklist.map(() => []);
+  F('date').value = todayStr(); F('time').value = ''; F('instrument').value = 'XAUUSD';
+  F('session').value = sessionFromTime(nowHHMM()) || 'Other';
+  F('direction').value = 'Long'; F('outcome').value = '';
+  ['entry', 'exit', 'sl', 'tp', 'lot', 'risk', 'pnl', 'rr', 'notes'].forEach(k => { F(k).value = ''; });
+  F('grade').value = ''; F('emotion').value = '';
+  renderFormDynamic();
+  clearFormErrors(); $('saveError').classList.add('hidden');
+  $('editNote').classList.add('hidden'); $('formTitle').textContent = 'Log a trade';
+  $('cancelEdit').textContent = 'Clear form';
+  draft.dirty = false;
+}
+function nowHHMM() { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; }
+function draftShotIds() { return draft ? draft.stepShots.flat().concat(draft.generalShots) : []; }
+
+function fillFormFromTrade(t, { duplicate = false } = {}) {
+  draft = newDraft(duplicate ? settings.checklist : t.checklistSnapshot);
+  F('date').value = duplicate ? todayStr() : t.date; F('time').value = duplicate ? '' : t.time;
+  F('instrument').value = t.instrument; F('session').value = t.session; F('direction').value = t.direction;
+  F('entry').value = t.entry ?? ''; F('sl').value = t.sl ?? ''; F('tp').value = t.tp ?? '';
+  F('lot').value = t.lot ?? ''; F('risk').value = t.risk ?? ''; F('rr').value = t.rr ?? ''; F('grade').value = t.grade;
+  draft.sessionTouched = true;
+  if (duplicate) {
+    ['exit', 'pnl', 'notes'].forEach(k => { F(k).value = ''; });
+    F('outcome').value = ''; F('emotion').value = '';
+    draft.confirmed = draft.checklist.map(() => false);
+    draft.stepShots = draft.checklist.map(() => []);
+    $('editNote').textContent = 'Copied from an earlier trade. Check the details, then save as a new trade.';
+    $('formTitle').textContent = 'Log a trade'; $('cancelEdit').textContent = 'Clear form';
+  } else {
+    draft.editingId = t.id; draft.original = t;
+    F('exit').value = t.exit ?? ''; F('pnl').value = t.pnl ?? ''; F('notes').value = t.notes;
+    F('outcome').value = t.outcome; F('emotion').value = t.emotion;
+    draft.followedPlan = t.followedPlan; draft.mistakes = new Set(t.mistakes);
+    draft.confirmed = t.checklistConfirmed.slice();
+    draft.stepShots = t.stepScreenshots.map(a => a.slice());
+    draft.generalShots = t.generalScreenshots.slice();
+    $('editNote').textContent = `Editing the trade from ${fmtDate(t.date)}. It keeps its own checklist steps.`;
+    $('formTitle').textContent = 'Edit trade'; $('cancelEdit').textContent = 'Cancel edit';
+  }
+  $('editNote').classList.remove('hidden');
+  clearFormErrors(); $('saveError').classList.add('hidden');
+  renderFormDynamic();
+  draft.dirty = duplicate; // a copy is unsaved work
+}
+
+function renderFormDynamic() {
+  // Plan toggle
+  $('f-plan').querySelectorAll('button').forEach(b => {
+    b.className = (b.dataset.v === 'yes' && draft.followedPlan === true) ? 'on-yes' : (b.dataset.v === 'no' && draft.followedPlan === false) ? 'on-no' : '';
+    b.setAttribute('aria-pressed', String(b.className !== ''));
+  });
+  // Mistake chips (settings list + any old ones on this trade)
+  const opts = settings.mistakes.slice(); draft.mistakes.forEach(m => { if (!opts.includes(m)) opts.push(m); });
+  const mc = $('f-mistakes'); mc.replaceChildren();
+  opts.forEach(m => {
+    const on = draft.mistakes.has(m);
+    mc.append(el('button', { type: 'button', class: 'chip' + (on ? ' on' : ''), 'aria-pressed': String(on), onclick: () => {
+      draft.mistakes.has(m) ? draft.mistakes.delete(m) : draft.mistakes.add(m); draft.dirty = true; renderFormDynamic();
+    } }, m));
+  });
+  if (!opts.length) mc.append(el('span', { class: 'muted small' }, 'No mistake options. Add some in Settings.'));
+  // Checklist steps
+  const box = $('f-checklist'); box.replaceChildren();
+  draft.checklist.forEach((s, i) => {
+    const on = !!draft.confirmed[i];
+    const shots = el('div', { class: 'shots' });
+    draft.stepShots[i].forEach((id, j) => shots.append(thumb(id, `${i + 1}. ${s.name}`, () => removeDraftShot(i, j))));
+    shots.append(uploadArea(i));
+    box.append(el('div', { class: 'step' + (on ? ' done' : '') + (draft.shotTarget === i ? ' shot-target' : ''), 'data-step': i, onpointerdown: () => setShotTarget(i) },
+      el('div', { class: 'step-head' },
+        el('div', { class: 'num' }, String(i + 1)),
+        el('div', { class: 'step-text' }, el('div', { class: 'step-name' }, s.name || `Step ${i + 1}`), s.description ? el('div', { class: 'step-desc' }, s.description) : null),
+        el('button', { type: 'button', class: 'confirm-btn' + (on ? ' on' : ''), 'aria-pressed': String(on), onclick: () => {
+          draft.confirmed[i] = !draft.confirmed[i]; draft.dirty = true; renderFormDynamic();
+        } }, on ? '✓ Confirmed' : 'Confirm')),
+      shots));
+  });
+  const g = $('f-general'); g.replaceChildren();
+  draft.generalShots.forEach((id, j) => g.append(thumb(id, 'General screenshot', () => removeDraftShot(-1, j))));
+  g.append(uploadArea(-1));
+  $('generalBox').classList.toggle('shot-target', draft.shotTarget === -1);
+  updateHints();
+}
+function setShotTarget(i) {
+  if (draft.shotTarget === i) return;
+  draft.shotTarget = i;
+  document.querySelectorAll('#f-checklist .step').forEach(s => s.classList.toggle('shot-target', Number(s.dataset.step) === i));
+  $('generalBox').classList.toggle('shot-target', i === -1);
+}
+function uploadArea(stepIndex) {
+  const input = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', multiple: true });
+  input.addEventListener('change', () => { addFiles(stepIndex, [...input.files]); input.value = ''; });
+  const lab = el('label', { class: 'upload' }, '+ Add screenshots', input);
+  lab.addEventListener('dragover', e => { e.preventDefault(); lab.classList.add('drag'); });
+  lab.addEventListener('dragleave', () => lab.classList.remove('drag'));
+  lab.addEventListener('drop', e => { e.preventDefault(); lab.classList.remove('drag'); addFiles(stepIndex, [...e.dataTransfer.files]); });
+  return lab;
+}
+async function addFiles(stepIndex, files) {
+  if (!files.length) return;
+  setShotTarget(stepIndex);
+  let added = 0;
+  for (const f of files) {
+    try {
+      const blob = await compressImage(f);
+      const id = uuid(); pendingBlobs.set(id, blob);
+      (stepIndex === -1 ? draft.generalShots : draft.stepShots[stepIndex]).push(id);
+      added++;
+    } catch (e) { toast(e.message, true); }
+  }
+  if (added) { draft.dirty = true; renderFormDynamic(); }
+}
+function removeDraftShot(stepIndex, j) {
+  const arr = stepIndex === -1 ? draft.generalShots : draft.stepShots[stepIndex];
+  const [id] = arr.splice(j, 1);
+  if (pendingBlobs.has(id)) forgetShot(id); // unsaved: free now. Saved ones are deleted only when the trade is saved.
+  draft.dirty = true; renderFormDynamic();
+}
+
+function updateHints() {
+  const dir = F('direction').value;
+  const rr = calcRR(dir, parseNum(F('entry').value), parseNum(F('sl').value), parseNum(F('tp').value));
+  const manual = parseNum(F('rr').value);
+  $('rrHint').textContent = manual != null ? '' : rr != null ? `Auto from prices: ${rrFmt(rr)}` : 'Fill entry, SL and TP to calculate.';
+  const pnl = parseNum(F('pnl').value), risk = parseNum(F('risk').value), outcome = F('outcome').value;
+  let h = '';
+  if (pnl != null && isFinite(pnl) && risk > 0) h = `Result: ${rFmt(pnl / risk)}`;
+  if (outcome === 'Loss' && pnl > 0) h = (h ? h + ' · ' : '') + 'A loss is usually negative: tap ± to switch.';
+  if (outcome === 'Win' && pnl < 0) h = (h ? h + ' · ' : '') + 'A win is usually positive: tap ± to switch.';
+  $('pnlHint').textContent = h;
+  $('planReq').style.visibility = outcome === 'Open' ? 'hidden' : 'visible';
+}
+
+function clearFormErrors() {
+  document.querySelectorAll('#tradeForm .field').forEach(f => { f.classList.remove('invalid'); const e = f.querySelector('.err'); if (e) e.textContent = ''; });
+}
+function fieldError(name, msg) {
+  const f = document.querySelector(`#tradeForm .field[data-f="${name}"]`);
+  f.classList.add('invalid'); f.querySelector('.err').textContent = msg;
+}
+
+function readForm() {
+  const errors = [];
+  const v = {};
+  v.date = F('date').value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date)) errors.push(['date', 'Please enter the date.']);
+  v.time = F('time').value || '';
+  v.instrument = F('instrument').value.trim().toUpperCase() || 'XAUUSD';
+  v.session = F('session').value; v.direction = F('direction').value;
+  v.outcome = F('outcome').value;
+  if (!v.outcome) errors.push(['outcome', 'Choose Win, Loss, Breakeven or Open.']);
+  const nums = { entry: 'Entry price', exit: 'Exit price', sl: 'Stop loss', tp: 'Take profit', lot: 'Lot size', risk: 'Risk', pnl: 'P&L', rr: 'R:R' };
+  for (const [k, label] of Object.entries(nums)) {
+    const n = parseNum(F(k).value);
+    if (Number.isNaN(n)) errors.push([k, `${label}: please enter a number only (e.g. 2385.40).`]);
+    v[k] = Number.isNaN(n) ? null : n;
+  }
+  if (v.entry == null && !errors.some(e => e[0] === 'entry')) errors.push(['entry', 'Entry price is required.']);
+  else if (v.entry != null && v.entry <= 0) errors.push(['entry', 'Entry price must be above 0.']);
+  ['exit', 'sl', 'tp', 'lot', 'risk'].forEach(k => { if (v[k] != null && v[k] < 0) errors.push([k, 'Must not be negative.']); });
+  if (v.rr != null && v.rr <= 0) errors.push(['rr', 'R:R must be above 0, or leave it blank.']);
+  if (v.rr != null) v.rr = Math.round(v.rr * 100) / 100;
+  if (v.outcome && v.outcome !== 'Open' && draft.followedPlan == null) errors.push(['followedPlan', 'Please choose Yes or No.']);
+  v.grade = F('grade').value; v.emotion = F('emotion').value; v.notes = F('notes').value;
+  return { v, errors };
+}
+
+let saving = false;
+async function onSave(e) {
+  e.preventDefault();
+  if (saving) return;
+  clearFormErrors(); $('saveError').classList.add('hidden');
+  const { v, errors } = readForm();
+  if (errors.length) {
+    errors.forEach(([k, m]) => fieldError(k, m));
+    const first = document.querySelector('#tradeForm .field.invalid');
+    if (first) { first.scrollIntoView({ block: 'center' }); const inp = first.querySelector('input,select,button'); if (inp) inp.focus({ preventScroll: true }); }
+    toast('Please check the highlighted fields.', true);
+    return;
+  }
+  const now = new Date().toISOString();
+  const orig = draft.original;
+  const rec = normalizeTrade(Object.assign({}, v, {
+    id: draft.editingId || uuid(),
+    createdAt: orig ? orig.createdAt : now,
+    updatedAt: now,
+    deleted: false,
+    schemaVersion: SCHEMA_VERSION,
+    followedPlan: draft.followedPlan,
+    mistakes: [...draft.mistakes],
+    checklistSnapshot: clone(draft.checklist),
+    checklistConfirmed: draft.confirmed.slice(),
+    stepScreenshots: draft.stepShots.map(a => a.slice()),
+    generalScreenshots: draft.generalShots.slice()
+  }));
+  const keepIds = new Set(shotIdsOf(rec));
+  const ops = [];
+  keepIds.forEach(id => { if (pendingBlobs.has(id)) { const b = pendingBlobs.get(id); ops.push({ op: 'put', store: 'shots', value: { id, tradeId: rec.id, blob: b, type: b.type || 'image/jpeg', createdAt: now } }); } });
+  const removed = orig ? shotIdsOf(orig).filter(id => !keepIds.has(id)) : [];
+  removed.forEach(id => ops.push({ op: 'delete', store: 'shots', key: id }));
+  ops.push({ op: 'put', store: 'trades', value: rec });
+  saving = true; $('saveBtn').disabled = true; $('saveBtn').textContent = 'Saving…';
+  try {
+    await store.batch(ops);
+  } catch (err) {
+    $('saveError').textContent = 'Not saved. ' + storageAdvice(err);
+    $('saveError').classList.remove('hidden');
+    $('saveError').scrollIntoView({ block: 'center' });
+    return;
+  } finally { saving = false; $('saveBtn').disabled = false; $('saveBtn').textContent = 'Save trade'; }
+  // Success: saved blobs are no longer "pending".
+  keepIds.forEach(id => pendingBlobs.delete(id));
+  removed.forEach(forgetShot);
+  const idx = trades.findIndex(t => t.id === rec.id);
+  if (idx >= 0) trades[idx] = rec; else trades.push(rec);
+  draft.dirty = false;
+  toast(orig ? 'Trade updated' : 'Trade saved');
+  resetForm();
+  refreshAll();
+  showTab('log');
+}
+
+/* =========================================================================
+   Dashboard
+   ========================================================================= */
+function metric(k, v, s, cls) { return el('div', { class: 'metric' }, el('div', { class: 'k' }, k), el('div', { class: 'v ' + (cls || '') }, v), s ? el('div', { class: 's' }, s) : null); }
+function renderDashboard() {
+  const live = liveTrades();
+  const st = computeStats(trades);
+  // Reminders + live line
+  const r = $('reminders'); r.replaceChildren();
+  const rem = settings.reminders.filter(x => x.trim());
+  if (rem.length) r.append(el('ul', null, rem.map(x => el('li', null, x))));
+  const parts = []; let stop = false;
+  const today = todayStr(), wk = weekStartStr();
+  const todayCount = live.filter(t => t.date === today).length;
+  const weekCount = live.filter(t => t.date >= wk && t.date <= addDays(wk, 6)).length;
+  if (settings.maxTradesDay != null) { parts.push(`Trades today: ${todayCount} of ${settings.maxTradesDay}`); if (todayCount >= settings.maxTradesDay) stop = true; }
+  if (settings.maxTradesWeek != null) { parts.push(`Trades this week: ${weekCount} of ${settings.maxTradesWeek}`); if (weekCount >= settings.maxTradesWeek) stop = true; }
+  if (settings.dailyLossLimit != null) {
+    const todayNet = live.filter(t => t.date === today && CLOSED.has(t.outcome)).reduce((s, t) => s + (t.pnl || 0), 0);
+    const left = settings.dailyLossLimit - Math.max(0, -todayNet);
+    if (left <= 0) { parts.push('Daily loss limit reached. Stop for today.'); stop = true; }
+    else parts.push(`Loss limit: ${money(left, false)} remaining today`);
+  }
+  if (parts.length) r.append(el('div', { class: 'live-line' + (stop ? ' stop' : '') }, parts.join(' · ')));
+  r.classList.toggle('hidden', !rem.length && !parts.length);
+
+  // Backup reminder
+  const nudge = $('backupNudge'); nudge.replaceChildren();
+  const last = device.lastBackupAt ? new Date(device.lastBackupAt) : null;
+  const sinceCount = live.filter(t => !last || new Date(t.createdAt) > last).length;
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  let nudgeMsg = null;
+  if (live.length && !last) nudgeMsg = 'You have not made a backup yet. A backup keeps your journal safe if this browser loses its data.';
+  else if (last && live.length && (days > 7 || sinceCount > 10)) nudgeMsg = `Last backup was ${days === 0 ? 'today' : days === 1 ? '1 day ago' : days + ' days ago'}, with ${sinceCount} new trade${sinceCount === 1 ? '' : 's'} since. Time for a fresh one.`;
+  if (nudgeMsg) nudge.append(el('span', { style: 'flex:1;min-width:200px' }, nudgeMsg), el('button', { type: 'button', class: 'btn small', onclick: exportJson }, 'Back up now'));
+  nudge.classList.toggle('hidden', !nudgeMsg);
+
+  $('dashEmpty').classList.toggle('hidden', live.length > 0);
+
+  // Metric cards
+  const m = $('metrics'); m.replaceChildren(
+    metric('Total trades', String(st.total), st.open ? `${st.open} open` : `${st.closed} closed`),
+    metric('Win rate', pct(st.winRate), `${st.wins}W · ${st.losses}L${st.breakevens ? ` · ${st.breakevens} BE` : ''}`),
+    metric('Net P&L', money(st.net), 'closed trades', signClass(st.net)),
+    metric('Profit factor', st.profitFactor == null ? '—' : st.profitFactor.toFixed(2), st.losses ? 'gross wins ÷ gross losses' : 'needs at least one loss'),
+    metric('Plan followed', pct(st.planRate), 'of closed trades'),
+    metric('Full-checklist win rate', pct(st.fullWinRate), `${st.fullCount} trade${st.fullCount === 1 ? '' : 's'} with every step`)
+  );
+  if (settings.startingBalance != null) {
+    const bal = settings.startingBalance + st.net;
+    m.append(metric('Balance', money(bal, false), `started ${money(settings.startingBalance, false)}`),
+      metric('Return', settings.startingBalance > 0 ? `${st.net >= 0 ? '+' : MINUS}${Math.abs(st.net / settings.startingBalance * 100).toFixed(1)}%` : '—', 'on starting balance', signClass(st.net)));
+  }
+
+  const p = st.pvr;
+  $('pvr').replaceChildren(
+    el('div', { class: 'good' }, el('div', { class: 'n' }, String(p.goodWin)), el('div', { class: 't' }, 'Followed plan + Win: good trade')),
+    el('div', { class: 'ok' }, el('div', { class: 'n' }, String(p.goodLoss)), el('div', { class: 't' }, 'Followed plan + Loss: good loss, accept it')),
+    el('div', { class: 'lucky' }, el('div', { class: 'n' }, String(p.luckyWin)), el('div', { class: 't' }, 'Broke plan + Win: lucky, dangerous')),
+    el('div', { class: 'lesson' }, el('div', { class: 'n' }, String(p.lessonLoss)), el('div', { class: 't' }, 'Broke plan + Loss: lesson'))
+  );
+
+  const kv = (k, v, cls) => [el('div', null, k), el('div', { class: 'val ' + (cls || '') }, v)];
+  $('moreStats').replaceChildren(
+    ...kv('Average win', money(st.avgWin), signClass(st.avgWin)),
+    ...kv('Average loss', money(st.avgLoss), signClass(st.avgLoss)),
+    ...kv('Average R:R (planned)', st.avgRR == null ? '—' : `${rrFmt(st.avgRR)}  (${st.rrCount})`),
+    ...kv('Average result in R', st.avgR == null ? '—' : `${rFmt(st.avgR)}  (${st.rCount})`, signClass(st.avgR)),
+    ...kv('Most common mistake', st.topMistake ? `${st.topMistake[0]} (${st.topMistake[1]}×)` : 'None logged')
+  );
+
+  // Recent form
+  const recent = live.slice().sort(chronoCmp).slice(-20);
+  const dots = $('recentDots'); dots.replaceChildren();
+  if (!recent.length) dots.append(el('span', { class: 'muted small' }, 'No trades yet.'));
+  recent.forEach(t => dots.append(el('span', { class: 'dot ' + t.outcome, title: `${fmtDate(t.date)} · ${t.outcome}${CLOSED.has(t.outcome) ? ' · ' + money(t.pnl || 0) : ''}`, role: 'img', 'aria-label': t.outcome })));
+
+  renderCharts();
+}
+function addDays(s, n) { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d + n)); }
+
+function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function niceTicks(min, max, count = 4) {
+  if (min === max) { const pad = Math.abs(min) * 0.1 || 10; min -= pad; max += pad; }
+  const span = max - min, rough = span / count;
+  const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+  const step = [1, 2, 2.5, 5, 10].map(x => x * pow).find(s => s >= rough) || 10 * pow;
+  const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
+  const ticks = []; for (let v = lo; v <= hi + step / 2; v += step) ticks.push(Math.round(v * 100) / 100);
+  return { lo, hi, ticks };
+}
+function shortMoney(n, signed) {
+  const a = Math.abs(n); const s = a >= 100000 ? (a / 1000).toFixed(0) + 'k' : a.toLocaleString('en-US', { maximumFractionDigits: a < 10 ? 2 : 0 });
+  return n < 0 ? `${MINUS}$${s}` : (signed && n > 0 ? `+$${s}` : `$${s}`);
+}
+
+function renderCharts() {
+  if (currentTab !== 'dashboard') return; // drawn when the tab is shown (needs a real width)
+  drawEquity(); drawSessions();
+}
+function drawEquity() {
+  const box = $('equityChart'); box.replaceChildren();
+  const useBal = settings.startingBalance != null;
+  $('equityTitle').textContent = useBal ? 'Equity curve (balance)' : 'Equity curve (cumulative P&L)';
+  const closed = liveTrades().filter(t => CLOSED.has(t.outcome)).sort(chronoCmp);
+  if (!closed.length) { box.append(el('p', { class: 'muted small', style: 'margin:0' }, 'The curve appears after your first closed trade.')); return; }
+  const base = useBal ? settings.startingBalance : 0;
+  const pts = [{ v: base, label: 'Start', t: null }];
+  let run = base; closed.forEach(t => { run += (t.pnl || 0); pts.push({ v: run, label: fmtDate(t.date), t }); });
+  const W = Math.max(280, box.clientWidth || 600), H = W < 500 ? 200 : 240;
+  const padL = 52, padR = 12, padT = 12, padB = 26;
+  const vals = pts.map(p => p.v);
+  const { lo, hi, ticks } = niceTicks(Math.min(...vals), Math.max(...vals));
+  const x = i => padL + (pts.length === 1 ? 0 : i * (W - padL - padR) / (pts.length - 1));
+  const y = v => padT + (hi - v) * (H - padT - padB) / ((hi - lo) || 1);
+  const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': `Equity curve, ${closed.length} closed trades, ending at ${money(run, useBal ? false : true)}` });
+  const grid = cssVar('--grid'), muted = cssVar('--muted'), blue = cssVar('--blue'), card = cssVar('--card');
+  ticks.forEach(tv => {
+    s.append(svg('line', { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: grid, 'stroke-width': 1 }));
+    s.append(svg('text', { x: padL - 6, y: y(tv) + 4, 'text-anchor': 'end', 'font-size': 11, fill: muted }, shortMoney(tv, !useBal)));
+  });
+  if (lo < base && hi > base) s.append(svg('line', { x1: padL, x2: W - padR, y1: y(base), y2: y(base), stroke: muted, 'stroke-width': 1, 'stroke-dasharray': '3 3' }));
+  // X labels: first trade, middle, last
+  const idxs = [...new Set([1, Math.round(pts.length / 2), pts.length - 1])].filter(i => i >= 1 && i < pts.length);
+  const minGap = 70; let lastX = -Infinity;
+  idxs.forEach((i, k) => {
+    const xx = x(i); if (xx - lastX < minGap && k !== idxs.length - 1) return; if (xx - lastX < minGap) return;
+    lastX = xx;
+    const anchor = i === pts.length - 1 ? 'end' : i === 1 && pts.length > 2 ? 'start' : 'middle';
+    s.append(svg('text', { x: Math.min(xx, W - padR), y: H - 8, 'text-anchor': anchor, 'font-size': 11, fill: muted }, fmtDate(pts[i].t.date, false)));
+  });
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+  s.append(svg('path', { d, fill: 'none', stroke: blue, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+  if (pts.length <= 40) pts.forEach((p, i) => { if (i) s.append(svg('circle', { cx: x(i), cy: y(p.v), r: 3.5, fill: blue, stroke: card, 'stroke-width': 1.5 })); });
+  // Hover / touch crosshair
+  const cross = svg('line', { y1: padT, y2: H - padB, stroke: muted, 'stroke-width': 1, visibility: 'hidden' });
+  const hot = svg('circle', { r: 5, fill: blue, stroke: card, 'stroke-width': 2, visibility: 'hidden' });
+  s.append(cross, hot);
+  const tip = el('div', { class: 'tip hidden' });
+  const onMove = ev => {
+    const rect = s.getBoundingClientRect();
+    const px = (ev.clientX - rect.left) * (W / rect.width);
+    let i = Math.round((px - padL) / ((W - padL - padR) / Math.max(1, pts.length - 1)));
+    i = Math.max(0, Math.min(pts.length - 1, i));
+    const p = pts[i];
+    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+    hot.setAttribute('cx', x(i)); hot.setAttribute('cy', y(p.v)); hot.setAttribute('visibility', 'visible');
+    tip.replaceChildren(
+      el('div', { style: 'font-weight:600' }, p.t ? `${fmtDate(p.t.date)}${p.t.time ? ' ' + p.t.time : ''}` : 'Start'),
+      p.t ? el('div', null, `Trade: ${money(p.t.pnl || 0)}`) : null,
+      el('div', null, `${useBal ? 'Balance' : 'Total'}: ${money(p.v, !useBal)}`));
+    tip.classList.remove('hidden');
+    const tx = x(i) * rect.width / W, ty = y(p.v) * rect.height / H;
+    tip.style.left = Math.max(0, Math.min(rect.width - tip.offsetWidth, tx - tip.offsetWidth / 2)) + 'px';
+    tip.style.top = Math.max(0, ty - tip.offsetHeight - 10) + 'px';
+  };
+  const onLeave = () => { cross.setAttribute('visibility', 'hidden'); hot.setAttribute('visibility', 'hidden'); tip.classList.add('hidden'); };
+  s.addEventListener('pointermove', onMove); s.addEventListener('pointerdown', onMove); s.addEventListener('pointerleave', onLeave);
+  box.append(s, tip);
+}
+function drawSessions() {
+  const box = $('sessionChart'); box.replaceChildren();
+  const closed = liveTrades().filter(t => t.outcome === 'Win' || t.outcome === 'Loss');
+  if (!closed.length) { box.append(el('p', { class: 'muted small', style: 'margin:0' }, 'Shows after your first win or loss.')); return; }
+  const data = SESSIONS.map(sn => ({ s: sn, w: closed.filter(t => t.session === sn && t.outcome === 'Win').length, l: closed.filter(t => t.session === sn && t.outcome === 'Loss').length }));
+  const green = cssVar('--green'), red = cssVar('--red'), muted = cssVar('--muted'), text = cssVar('--text'), grid = cssVar('--grid');
+  box.append(el('div', { class: 'legend' }, el('span', null, el('i', { style: `background:${green}` }), 'Wins'), el('span', null, el('i', { style: `background:${red}` }), 'Losses')));
+  const W = Math.max(280, box.clientWidth || 600), H = 180, padB = 26, padT = 18;
+  const max = Math.max(1, ...data.map(d => Math.max(d.w, d.l)));
+  const groupW = W / data.length, barW = Math.min(36, groupW / 3.2);
+  const h = v => (H - padT - padB) * v / max;
+  const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': data.map(d => `${d.s}: ${d.w} wins, ${d.l} losses`).join('; ') });
+  s.append(svg('line', { x1: 0, x2: W, y1: H - padB, y2: H - padB, stroke: grid, 'stroke-width': 1 }));
+  data.forEach((d, i) => {
+    const cx = groupW * i + groupW / 2;
+    [[d.w, green, cx - barW - 1, 'wins'], [d.l, red, cx + 1, 'losses']].forEach(([v, c, bx, word]) => {
+      const bh = h(v), by = H - padB - bh;
+      if (v > 0) {
+        const r = Math.min(4, bh / 2, barW / 2);
+        const path = `M${bx},${H - padB} V${by + r} Q${bx},${by} ${bx + r},${by} H${bx + barW - r} Q${bx + barW},${by} ${bx + barW},${by + r} V${H - padB} Z`;
+        const p = svg('path', { d: path, fill: c }); p.append(svg('title', null, `${d.s}: ${v} ${word}`)); s.append(p);
+      }
+      s.append(svg('text', { x: bx + barW / 2, y: by - 4, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': 600, fill: text }, String(v)));
+    });
+    s.append(svg('text', { x: cx, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, fill: muted }, d.s));
+  });
+  box.append(s);
+}
+
+/* =========================================================================
+   Trade log
+   ========================================================================= */
+function filteredTrades() {
+  const o = $('flt-outcome').value, s = $('flt-session').value, p = $('flt-plan').value, r = $('flt-range').value;
+  const ws = weekStartStr(), we = addDays(ws, 6), ms = monthStartStr(), me = addDays(ymd(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)), -1);
+  return liveTrades().filter(t =>
+    (!o || t.outcome === o) && (!s || t.session === s) &&
+    (!p || (p === 'yes' ? t.followedPlan === true : t.followedPlan === false)) &&
+    (!r || (r === 'week' ? t.date >= ws && t.date <= we : t.date >= ms && t.date <= me))
+  ).sort((a, b) => chronoCmp(b, a));
+}
+function renderLog() {
+  const list = $('tradeList'); list.replaceChildren();
+  const all = liveTrades(), shown = filteredTrades();
+  const anyFilter = ['flt-outcome', 'flt-session', 'flt-plan', 'flt-range'].some(id => $(id).value);
+  $('clearFilters').disabled = !anyFilter;
+  $('logCount').textContent = all.length ? `Showing ${shown.length} of ${all.length} trade${all.length === 1 ? '' : 's'}` : '';
+  if (!all.length) {
+    list.append(el('div', { class: 'card empty' }, el('p', null, el('strong', null, 'No trades logged yet.')), el('button', { type: 'button', class: 'btn primary', onclick: () => showTab('form') }, 'Log your first trade')));
+    return;
+  }
+  if (!shown.length) {
+    list.append(el('div', { class: 'card empty' }, el('p', null, 'No trades match these filters.'), el('button', { type: 'button', class: 'btn', onclick: clearFilters }, 'Clear filters')));
+    return;
+  }
+  shown.forEach(t => list.append(tradeCard(t)));
+}
+function tradeCard(t) {
+  const rr = effRR(t), r = rMultiple(t);
+  const closed = CLOSED.has(t.outcome);
+  const confirmedN = t.checklistConfirmed.filter(Boolean).length;
+  const d = (k, v) => el('div', null, el('span', { class: 'k' }, k), el('span', { class: 'v' }, v));
+  const card = el('div', { class: 'card', 'data-id': t.id },
+    el('div', { class: 'trade-head' },
+      el('span', { class: 'dir' }, t.direction === 'Long' ? '▲ Long' : '▼ Short'),
+      el('span', { class: 'muted small' }, `${t.instrument} · ${fmtDate(t.date)}${t.time ? ' ' + t.time : ''}`),
+      el('span', { class: 'badge session' }, t.session),
+      el('span', { class: 'badge ' + t.outcome }, t.outcome),
+      t.grade ? el('span', { class: 'badge' }, 'Grade ' + t.grade) : null,
+      el('span', { class: 'pnl ' + (closed ? signClass(t.pnl || 0) : '') }, closed ? money(t.pnl || 0) : (t.pnl != null ? money(t.pnl) : 'Open'), r != null ? el('span', { class: 'r' }, rFmt(r)) : null)),
+    el('div', { class: 'details' },
+      d('Entry', price(t.entry)), d('Exit', price(t.exit)), d('Stop loss', price(t.sl)), d('Take profit', price(t.tp)),
+      d('R:R', rr == null ? '—' : rrFmt(rr) + (t.rr == null ? ' (auto)' : '')), d('Lot size', t.lot == null ? '—' : String(t.lot)),
+      d('Risk', t.risk == null ? '—' : money(t.risk, false)), d('Checklist', `${confirmedN}/${t.checklistSnapshot.length}`),
+      d('Followed plan', t.followedPlan === true ? 'Yes' : t.followedPlan === false ? 'No' : '—'), d('Emotion', t.emotion || '—')),
+    t.mistakes.length ? el('div', { class: 'chips', style: 'margin-top:8px' }, t.mistakes.map(m => el('span', { class: 'badge mistake' }, m))) : null,
+    t.notes ? el('div', { class: 'notes' }, t.notes) : null
+  );
+  if (t.checklistSnapshot.length) {
+    const ul = el('ul', { class: 'ck-list' });
+    t.checklistSnapshot.forEach((s, i) => {
+      const ok = t.checklistConfirmed[i];
+      const li = el('li', { class: ok ? 'yes' : 'no' }, el('span', { class: 'mark' }, ok ? '✓' : '○'), el('strong', null, `${i + 1}. ${s.name}`), s.description ? el('span', { class: 'muted' }, ' · ' + s.description) : null);
+      if (t.stepScreenshots[i].length) li.append(el('div', { class: 'shots' }, t.stepScreenshots[i].map(id => thumb(id, `${fmtDate(t.date)} · ${i + 1}. ${s.name}`))));
+      ul.append(li);
+    });
+    card.append(ul);
+  }
+  if (t.generalScreenshots.length) card.append(el('div', { class: 'small muted', style: 'margin-top:8px;font-weight:600' }, 'General screenshots'), el('div', { class: 'shots' }, t.generalScreenshots.map(id => thumb(id, `${fmtDate(t.date)} · General`))));
+  card.append(el('div', { class: 'card-actions' },
+    el('button', { type: 'button', class: 'btn small', onclick: () => editTrade(t.id) }, 'Edit'),
+    el('button', { type: 'button', class: 'btn small', onclick: () => duplicateTrade(t.id) }, 'Duplicate'),
+    el('button', { type: 'button', class: 'btn small danger', onclick: () => deleteTrade(t.id) }, 'Delete')));
+  return card;
+}
+function clearFilters() { ['flt-outcome', 'flt-session', 'flt-plan', 'flt-range'].forEach(id => { $(id).value = ''; }); renderLog(); }
+function confirmLeaveDraft() { return !draft.dirty || confirm('You have unsaved changes in the Log trade form. Discard them?'); }
+function editTrade(id) {
+  const t = trades.find(x => x.id === id); if (!t) return;
+  if (!confirmLeaveDraft()) return;
+  if (draft) draftShotIds().forEach(sid => { if (pendingBlobs.has(sid)) forgetShot(sid); });
+  fillFormFromTrade(t); showTab('form');
+}
+function duplicateTrade(id) {
+  const t = trades.find(x => x.id === id); if (!t) return;
+  if (!confirmLeaveDraft()) return;
+  if (draft) draftShotIds().forEach(sid => { if (pendingBlobs.has(sid)) forgetShot(sid); });
+  fillFormFromTrade(t, { duplicate: true }); showTab('form');
+  toast('Copied. Adjust and save.');
+}
+async function deleteTrade(id) {
+  const t = trades.find(x => x.id === id); if (!t) return;
+  if (!confirm(`Delete the ${t.direction} trade from ${fmtDate(t.date)}${CLOSED.has(t.outcome) ? ' (' + money(t.pnl || 0) + ')' : ''}?\n\nIts screenshots will be deleted too. This cannot be undone.`)) return;
+  const now = new Date().toISOString();
+  const shotIds = shotIdsOf(t);
+  // Keep a small "deleted" marker (tombstone) so future sync/import knows it was removed.
+  const tomb = Object.assign({}, t, { deleted: true, updatedAt: now, stepScreenshots: t.stepScreenshots.map(() => []), generalScreenshots: [] });
+  try {
+    await store.batch([{ op: 'put', store: 'trades', value: tomb }, ...shotIds.map(sid => ({ op: 'delete', store: 'shots', key: sid }))]);
+  } catch (err) { toast('Not deleted. ' + storageAdvice(err), true); return; }
+  shotIds.forEach(forgetShot);
+  trades[trades.findIndex(x => x.id === id)] = normalizeTrade(tomb);
+  if (draft.editingId === id) resetForm();
+  toast('Trade deleted');
+  refreshAll();
+}
+
+/* =========================================================================
+   Settings
+   ========================================================================= */
+let ckWork = [];
+function renderThemeSeg() {
+  $('themeSeg').querySelectorAll('button').forEach(b => { b.className = b.dataset.v === settings.theme ? 'on' : ''; b.setAttribute('aria-pressed', String(b.dataset.v === settings.theme)); });
+}
+function applyTheme() {
+  const t = settings.theme;
+  if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem('tj-theme', t); } catch (e) {}
+  renderCharts();
+}
+function renderCkEditor() {
+  const box = $('ckEditor'); box.replaceChildren();
+  ckWork.forEach((s, i) => {
+    const name = el('input', { type: 'text', value: s.name, placeholder: 'Step name', 'aria-label': `Step ${i + 1} name` });
+    name.addEventListener('input', () => { s.name = name.value; });
+    const desc = el('textarea', { placeholder: 'Short description', 'aria-label': `Step ${i + 1} description` }); desc.value = s.description;
+    desc.addEventListener('input', () => { s.description = desc.value; });
+    box.append(el('div', { class: 'ck-edit' },
+      el('div', { class: 'row', style: 'margin-bottom:6px' },
+        el('div', { class: 'num' }, String(i + 1)), el('span', { class: 'spacer' }),
+        el('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Move up', title: 'Move up', disabled: i === 0, onclick: () => { [ckWork[i - 1], ckWork[i]] = [ckWork[i], ckWork[i - 1]]; renderCkEditor(); } }, '↑'),
+        el('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Move down', title: 'Move down', disabled: i === ckWork.length - 1, onclick: () => { [ckWork[i + 1], ckWork[i]] = [ckWork[i], ckWork[i + 1]]; renderCkEditor(); } }, '↓'),
+        el('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Remove step', title: 'Remove', disabled: ckWork.length <= 1, onclick: () => { ckWork.splice(i, 1); renderCkEditor(); } }, '✕')),
+      name, desc));
+  });
+  $('ckAdd').disabled = ckWork.length >= MAX_STEPS;
+}
+async function applyChecklist(list, what) {
+  if (!confirm(`${what}\n\nThis only affects NEW trades. Trades you already logged keep their own steps.`)) return;
+  try { await saveSettings({ checklist: clone(list) }); }
+  catch (err) { toast('Not saved. ' + storageAdvice(err), true); return; }
+  ckWork = clone(settings.checklist); renderCkEditor(); $('ckErr').textContent = '';
+  // Refresh the form only if it holds a fresh, untouched new trade.
+  if (!draft.editingId && !draft.dirty) resetForm();
+  toast('Checklist saved');
+}
+function renderLimits() {
+  $('s-maxDay').value = settings.maxTradesDay ?? ''; $('s-maxWeek').value = settings.maxTradesWeek ?? '';
+  $('s-lossLimit').value = settings.dailyLossLimit ?? ''; $('s-startBal').value = settings.startingBalance ?? '';
+  $('s-reminders').value = settings.reminders.join('\n'); $('s-mistakes').value = settings.mistakes.join('\n');
+}
+async function saveLimits() {
+  const errs = []; const vals = {};
+  [['s-maxDay', 'maxTradesDay', 'Max trades per day', true], ['s-maxWeek', 'maxTradesWeek', 'Max trades per week', true], ['s-lossLimit', 'dailyLossLimit', 'Daily loss limit', false], ['s-startBal', 'startingBalance', 'Starting balance', false]]
+    .forEach(([id, key, label, int]) => {
+      const n = parseNum($(id).value);
+      if (Number.isNaN(n) || (n != null && (n < 0 || (int && !Number.isInteger(n))))) errs.push(`${label}: enter a ${int ? 'whole ' : ''}number of 0 or more, or leave blank.`);
+      else vals[key] = n;
+    });
+  $('limitsErr').textContent = errs.join(' ');
+  if (errs.length) return;
+  const lines = id => [...new Set($(id).value.split('\n').map(s => s.trim()).filter(Boolean))];
+  vals.reminders = lines('s-reminders'); vals.mistakes = lines('s-mistakes');
+  try { await saveSettings(vals); } catch (err) { toast('Not saved. ' + storageAdvice(err), true); return; }
+  renderLimits(); renderFormDynamic(); refreshAll(); toast('Settings saved');
+}
+async function renderDataInfo() {
+  const live = liveTrades();
+  const rows = [];
+  const add = (k, v) => rows.push(el('div', null, k), el('div', { class: 'val' }, v));
+  add('Trades', String(live.length));
+  let shotCount = 0; live.forEach(t => { shotCount += shotIdsOf(t).length; });
+  add('Screenshots', String(shotCount));
+  let used = '—', persisted = 'Unknown';
+  try { if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); used = `${fmtBytes(e.usage)}${e.quota ? ' of ' + fmtBytes(e.quota) : ''}`; } } catch (e) {}
+  try { if (navigator.storage && navigator.storage.persisted) persisted = (await navigator.storage.persisted()) ? 'Yes' : 'No (browser may clear it if space runs low)'; } catch (e) {}
+  add('Storage used', used);
+  add('Protected from auto-clean', persisted);
+  if (device.lastBackupAt) {
+    const days = Math.floor((Date.now() - new Date(device.lastBackupAt)) / 86400000);
+    add('Last backup', days === 0 ? 'Today' : days === 1 ? '1 day ago' : `${days} days ago`);
+  } else add('Last backup', 'Never');
+  $('dataInfo').replaceChildren(...rows);
+}
+
+/* =========================================================================
+   Backup: export / import / CSV
+   ========================================================================= */
+function blobToBase64(blob) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+}
+function base64ToBlob(b64, type) {
+  const bin = atob(b64); const u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return new Blob([u], { type: type || 'image/jpeg' });
+}
+function downloadBlob(blob, name) {
+  const a = el('a', { href: URL.createObjectURL(blob), download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+}
+async function buildBackup() {
+  const shots = await store.list('shots');
+  const referenced = new Set(); trades.forEach(t => shotIdsOf(t).forEach(id => referenced.add(id)));
+  const outShots = [];
+  for (const s of shots) {
+    if (!referenced.has(s.id) || !s.blob) continue;
+    outShots.push({ id: s.id, tradeId: s.tradeId || null, type: s.type || s.blob.type || 'image/jpeg', createdAt: s.createdAt || null, data: await blobToBase64(s.blob) });
+  }
+  const { key, ...cleanSettings } = settings;
+  const data = { app: BACKUP_APP_ID, backupFormat: 1, appVersion: APP_VERSION, schemaVersion: SCHEMA_VERSION, exportedAt: new Date().toISOString(),
+    settings: cleanSettings, trades: trades.slice().sort(chronoCmp), screenshots: outShots };
+  const name = `trade-journal-backup-${todayStr()}.json`;
+  return { blob: new Blob([JSON.stringify(data)], { type: 'application/json' }), name, count: liveTrades().length, shots: outShots.length };
+}
+async function exportJson() {
+  try {
+    toast('Preparing backup…');
+    const b = await buildBackup();
+    downloadBlob(b.blob, b.name);
+    await saveDevice({ lastBackupAt: new Date().toISOString() });
+    $('exportInfo').textContent = `Saved ${b.name}: ${b.count} trades, ${b.shots} screenshots, ${fmtBytes(b.blob.size)}. Keep it somewhere safe (e.g. Google Drive, email to yourself).`;
+    toast(`Backup downloaded (${fmtBytes(b.blob.size)})`);
+    refreshAll();
+  } catch (err) { toast('Backup failed: ' + (err.message || err), true); }
+}
+async function shareJson() {
+  try {
+    const b = await buildBackup();
+    const file = new File([b.blob], b.name, { type: 'application/json' });
+    if (!(navigator.canShare && navigator.canShare({ files: [file] }))) { toast('Sharing files is not supported here. Use Export instead.', true); return; }
+    await navigator.share({ files: [file], title: 'Trade Journal backup' });
+    await saveDevice({ lastBackupAt: new Date().toISOString() });
+    $('exportInfo').textContent = `Shared ${b.name} (${fmtBytes(b.blob.size)}).`;
+    refreshAll();
+  } catch (err) { if (err && err.name !== 'AbortError') toast('Share failed: ' + (err.message || err), true); }
+}
+function csvCell(v, isText) {
+  if (v == null) return '';
+  let s = String(v);
+  if (isText && /^[=+\-@\t\r]/.test(s)) s = "'" + s; // stop Excel treating notes as formulas
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function buildCsv(list) {
+  const cols = [
+    ['Date', t => t.date, true], ['Time', t => t.time, true], ['Instrument', t => t.instrument, true], ['Session', t => t.session, true],
+    ['Direction', t => t.direction, true], ['Entry', t => t.entry], ['Exit', t => t.exit], ['Stop loss', t => t.sl], ['Take profit', t => t.tp],
+    ['Lot size', t => t.lot], ['Risk ($)', t => t.risk], ['P&L ($)', t => t.pnl], ['Result (R)', t => { const r = rMultiple(t); return r == null ? null : Math.round(r * 100) / 100; }],
+    ['R:R', t => effRR(t)], ['Outcome', t => t.outcome, true], ['Grade', t => t.grade, true],
+    ['Followed plan', t => t.followedPlan === true ? 'Yes' : t.followedPlan === false ? 'No' : '', true],
+    ['Checklist', t => `${t.checklistConfirmed.filter(Boolean).length}/${t.checklistSnapshot.length} steps`, true],
+    ['Checklist steps', t => t.checklistSnapshot.map(s => s.name).join(' | '), true],
+    ['Confirmed steps', t => t.checklistSnapshot.filter((s, i) => t.checklistConfirmed[i]).map(s => s.name).join(' | '), true],
+    ['Mistakes', t => t.mistakes.join('; '), true], ['Emotion', t => t.emotion, true], ['Notes', t => t.notes, true],
+    ['Screenshots', t => shotIdsOf(t).length], ['ID', t => t.id, true], ['Created', t => t.createdAt, true], ['Updated', t => t.updatedAt, true]
+  ];
+  const lines = [cols.map(c => csvCell(c[0], false)).join(',')];
+  list.forEach(t => lines.push(cols.map(([, f, txt]) => csvCell(f(t), txt)).join(',')));
+  return '﻿' + lines.join('\r\n') + '\r\n';
+}
+function exportCsv() {
+  const list = liveTrades().sort(chronoCmp);
+  if (!list.length) { toast('No trades to export yet.', true); return; }
+  const blob = new Blob([buildCsv(list)], { type: 'text/csv;charset=utf-8' });
+  downloadBlob(blob, `trade-journal-trades-${todayStr()}.csv`);
+  $('exportInfo').textContent = `Excel file saved: ${list.length} trades. It has no screenshots; use the full backup (.json) to keep everything.`;
+}
+
+let pendingImport = null;
+function validateBackup(obj) {
+  if (!obj || typeof obj !== 'object' || !Array.isArray(obj.trades)) throw new Error('This file is not a Trade Journal backup.');
+  if (obj.app && obj.app !== BACKUP_APP_ID) throw new Error('This file is from a different app.');
+  const shots = new Map();
+  (Array.isArray(obj.screenshots) ? obj.screenshots : []).forEach(s => { if (s && s.id && typeof s.data === 'string') shots.set(String(s.id), s); });
+  const good = [], bad = [];
+  obj.trades.forEach(r => { if (r && (typeof r.id === 'string' || typeof r.id === 'number') && String(r.id)) good.push(normalizeTrade(r)); else bad.push(r); });
+  let missing = 0;
+  good.forEach(t => {
+    const keep = id => shots.has(id) || (missing++, false);
+    t.stepScreenshots = t.stepScreenshots.map(a => a.filter(keep));
+    t.generalScreenshots = t.generalScreenshots.filter(keep);
+  });
+  return { trades: good, bad: bad.length, shots, missing, settings: obj.settings ? normalizeSettings(obj.settings) : null, exportedAt: obj.exportedAt || null };
+}
+async function onImportFile(file) {
+  $('importPanel').classList.add('hidden'); pendingImport = null;
+  if (!file) return;
+  let parsed;
+  try { parsed = validateBackup(JSON.parse(await file.text())); }
+  catch (err) { toast('Cannot import: ' + (err instanceof SyntaxError ? 'the file is damaged or not a JSON backup.' : err.message), true); return; }
+  const local = new Map(trades.map(t => [t.id, t]));
+  const liveIn = parsed.trades.filter(t => !t.deleted);
+  const exist = parsed.trades.filter(t => local.has(t.id));
+  const newer = exist.filter(t => t.updatedAt > local.get(t.id).updatedAt);
+  const fresh = parsed.trades.filter(t => !local.has(t.id) && !t.deleted);
+  const deletions = newer.filter(t => t.deleted && !local.get(t.id).deleted);
+  const shotCount = liveIn.reduce((n, t) => n + shotIdsOf(t).length, 0);
+  pendingImport = { parsed, fresh, newer };
+  const p = $('importPanel'); p.replaceChildren();
+  const useSettings = el('input', { type: 'checkbox', id: 'impSettings' });
+  useSettings.checked = !!parsed.settings && settings.updatedAt == null; // a new device takes the backup's checklist by default
+  p.append(
+    el('div', { style: 'font-weight:600' }, `Backup${parsed.exportedAt ? ' from ' + fmtDate(ymd(new Date(parsed.exportedAt))) : ''}: ${liveIn.length} trades, ${shotCount} screenshots, ${exist.filter(t => !t.deleted).length} already exist here.`),
+    el('ul', { class: 'small', style: 'margin:6px 0;padding-left:18px' },
+      el('li', null, `Merge will add ${fresh.length} new trade${fresh.length === 1 ? '' : 's'} and update ${newer.length - deletions.length} that changed${deletions.length ? `, and remove ${deletions.length} that were deleted on the other device` : ''}. Nothing else changes.`),
+      el('li', null, `Replace all will delete the ${liveTrades().length} trades on this device and use only the backup.`),
+      parsed.missing ? el('li', null, `${parsed.missing} screenshot${parsed.missing === 1 ? ' is' : 's are'} missing from the file and will be skipped.`) : null,
+      parsed.bad ? el('li', null, `${parsed.bad} damaged trade record${parsed.bad === 1 ? '' : 's'} will be skipped.`) : null),
+    parsed.settings ? el('label', { class: 'check' }, useSettings, el('span', null, 'Also use the checklist, mistakes, reminders and limits from this backup')) : null,
+    el('div', { class: 'row' },
+      el('button', { type: 'button', class: 'btn primary', onclick: () => doImport('merge') }, 'Merge (recommended)'),
+      el('button', { type: 'button', class: 'btn danger', onclick: () => doImport('replace') }, 'Replace all'),
+      el('button', { type: 'button', class: 'btn', onclick: () => { pendingImport = null; p.classList.add('hidden'); } }, 'Cancel')));
+  p.classList.remove('hidden');
+}
+async function doImport(mode) {
+  if (!pendingImport) return;
+  const { parsed, fresh, newer } = pendingImport;
+  const useSettings = $('impSettings') ? $('impSettings').checked : false;
+  if (mode === 'replace') {
+    if (!confirm(`Replace ALL data on this device with the backup?\n\nThe ${liveTrades().length} trades here will be removed.`)) return;
+    if (!confirm('Are you sure? This cannot be undone. (Tip: export a backup of this device first.)')) return;
+  }
+  const ops = []; const shotOp = id => { const s = parsed.shots.get(id); ops.push({ op: 'put', store: 'shots', value: { id, tradeId: s.tradeId || null, blob: base64ToBlob(s.data, s.type), type: s.type || 'image/jpeg', createdAt: s.createdAt || null } }); };
+  let toWrite;
+  try {
+    if (mode === 'replace') {
+      ops.push({ op: 'clear', store: 'trades' }, { op: 'clear', store: 'shots' });
+      toWrite = parsed.trades;
+      toWrite.forEach(t => { if (!t.deleted) shotIdsOf(t).forEach(shotOp); ops.push({ op: 'put', store: 'trades', value: t }); });
+    } else {
+      toWrite = fresh.concat(newer);
+      const local = new Map(trades.map(t => [t.id, t]));
+      toWrite.forEach(t => {
+        const keep = new Set(t.deleted ? [] : shotIdsOf(t));
+        const old = local.get(t.id);
+        if (old) shotIdsOf(old).forEach(id => { if (!keep.has(id)) ops.push({ op: 'delete', store: 'shots', key: id }); });
+        keep.forEach(shotOp);
+        ops.push({ op: 'put', store: 'trades', value: t.deleted ? Object.assign({}, t, { stepScreenshots: t.stepScreenshots.map(() => []), generalScreenshots: [] }) : t });
+      });
+    }
+    if (useSettings && parsed.settings) ops.push({ op: 'put', store: 'meta', value: Object.assign({}, parsed.settings, { key: 'settings', updatedAt: new Date().toISOString() }) });
+    await store.batch(ops);
+  } catch (err) { toast('Import failed, nothing was changed. ' + storageAdvice(err), true); return; }
+  urlCache.forEach((u, id) => { if (!pendingBlobs.has(id)) { URL.revokeObjectURL(u); urlCache.delete(id); } });
+  await loadAll();
+  pendingImport = null; $('importPanel').classList.add('hidden');
+  if (draft.editingId && !trades.some(t => t.id === draft.editingId && !t.deleted)) resetForm();
+  else if (!draft.dirty && !draft.editingId) resetForm();
+  ckWork = clone(settings.checklist); renderCkEditor(); renderLimits(); renderThemeSeg(); applyTheme();
+  refreshAll();
+  toast(mode === 'replace' ? `Replaced: ${liveTrades().length} trades loaded` : `Merged: ${fresh.length} added, ${newer.length} updated`);
+}
+async function wipeAll() {
+  if (!confirm('Delete ALL trades and screenshots on this device?\n\nExport a backup first if you may need them.')) return;
+  if (!confirm('Last check: this cannot be undone. Delete everything?')) return;
+  try { await store.batch([{ op: 'clear', store: 'trades' }, { op: 'clear', store: 'shots' }]); }
+  catch (err) { toast('Not deleted. ' + storageAdvice(err), true); return; }
+  urlCache.forEach(u => URL.revokeObjectURL(u)); urlCache.clear(); pendingBlobs.clear();
+  trades = []; resetForm(); refreshAll(); toast('All trades deleted');
+}
+
+/* =========================================================================
+   Wiring
+   ========================================================================= */
+function refreshAll() { renderDashboard(); renderLog(); if (currentTab === 'settings') renderDataInfo(); }
+
+function wire() {
+  document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.goto)));
+  // Form
+  $('tradeForm').addEventListener('submit', onSave);
+  $('tradeForm').addEventListener('input', () => { draft.dirty = true; updateHints(); });
+  $('tradeForm').addEventListener('change', () => { draft.dirty = true; updateHints(); });
+  F('session').addEventListener('change', () => { draft.sessionTouched = true; });
+  F('time').addEventListener('change', () => { if (!draft.sessionTouched) { const s = sessionFromTime(F('time').value); if (s) F('session').value = s; } });
+  $('f-plan').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    draft.followedPlan = b.dataset.v === 'yes'; draft.dirty = true; renderFormDynamic();
+  });
+  $('pnlSign').addEventListener('click', () => {
+    const n = parseNum(F('pnl').value);
+    if (n == null || Number.isNaN(n)) { F('pnl').value = F('pnl').value.trim().startsWith('-') ? F('pnl').value.trim().slice(1) : '-' + F('pnl').value.trim(); }
+    else F('pnl').value = String(-n);
+    draft.dirty = true; updateHints(); F('pnl').focus();
+  });
+  $('cancelEdit').addEventListener('click', () => {
+    if (draft.dirty && !confirm(draft.editingId ? 'Cancel editing? Your changes will not be saved.' : 'Clear the form? What you typed will be lost.')) return;
+    resetForm();
+  });
+  $('generalBox').addEventListener('pointerdown', () => setShotTarget(-1));
+  // Paste screenshots (laptop): goes to the highlighted step or General.
+  document.addEventListener('paste', e => {
+    if (currentTab !== 'form' || !e.clipboardData) return;
+    const files = [...e.clipboardData.items].filter(i => i.kind === 'file' && /^image\//.test(i.type)).map(i => i.getAsFile()).filter(Boolean);
+    if (!files.length) return;
+    e.preventDefault(); addFiles(draft.shotTarget, files);
+  });
+  // Log filters
+  ['flt-outcome', 'flt-session', 'flt-plan', 'flt-range'].forEach(id => $(id).addEventListener('change', renderLog));
+  $('clearFilters').addEventListener('click', clearFilters);
+  // Settings
+  $('themeSeg').addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    try { await saveSettings({ theme: b.dataset.v }, false); } catch (err) { toast('Not saved. ' + storageAdvice(err), true); }
+    renderThemeSeg(); applyTheme();
+  });
+  $('presetA').addEventListener('click', () => applyChecklist(PRESET_A, 'Load preset A: ICC?'));
+  $('presetB').addEventListener('click', () => applyChecklist(PRESET_B, 'Load preset B: Direction → AOI → Entry Model?'));
+  $('ckAdd').addEventListener('click', () => { if (ckWork.length < MAX_STEPS) { ckWork.push({ name: '', description: '' }); renderCkEditor(); const ins = $('ckEditor').querySelectorAll('input'); ins[ins.length - 1].focus(); } });
+  $('ckReset').addEventListener('click', () => { ckWork = clone(settings.checklist); renderCkEditor(); $('ckErr').textContent = ''; });
+  $('ckSave').addEventListener('click', () => {
+    const list = ckWork.map(s => ({ name: s.name.trim(), description: s.description.trim() }));
+    if (list.some(s => !s.name)) { $('ckErr').textContent = 'Every step needs a name.'; return; }
+    if (list.length < 1 || list.length > MAX_STEPS) { $('ckErr').textContent = 'Use 1 to 8 steps.'; return; }
+    applyChecklist(list, 'Save these checklist steps?');
+  });
+  $('saveLimits').addEventListener('click', saveLimits);
+  $('exportJson').addEventListener('click', exportJson);
+  $('shareJson').addEventListener('click', shareJson);
+  $('exportCsv').addEventListener('click', exportCsv);
+  $('importFile').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; onImportFile(f); });
+  $('wipeAll').addEventListener('click', wipeAll);
+  try { if (navigator.canShare && navigator.canShare({ files: [new File(['x'], 'x.json', { type: 'application/json' })] })) $('shareJson').classList.remove('hidden'); } catch (e) {}
+  // Lightbox
+  $('lbClose').addEventListener('click', closeLightbox);
+  $('lightbox').addEventListener('click', e => { if (e.target === $('lightbox')) closeLightbox(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('lightbox').classList.contains('hidden')) closeLightbox(); });
+  // Redraw charts on resize / theme change (each draw replaces the old chart).
+  let raf = 0; const redraw = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(renderCharts); };
+  window.addEventListener('resize', redraw);
+  if (window.matchMedia) { const mq = matchMedia('(prefers-color-scheme: dark)'); (mq.addEventListener ? mq.addEventListener('change', redraw) : mq.addListener(redraw)); }
+  window.addEventListener('beforeunload', e => { if (draft && draft.dirty) { e.preventDefault(); e.returnValue = ''; } });
+}
+
+async function init() {
+  $('appVersion').textContent = 'v' + APP_VERSION;
+  wire();
+  try {
+    await store.open();
+    await loadAll();
+  } catch (err) {
+    showBanner('Could not open storage: ' + ((err && err.message) || err) + ' Your trades cannot be saved in this browser mode. Try a normal (not private) window, or another browser.');
+    draft = newDraft(); resetForm(); renderDashboard(); renderLog();
+    $('saveBtn').disabled = true;
+    return;
+  }
+  applyTheme(); renderThemeSeg();
+  ckWork = clone(settings.checklist); renderCkEditor(); renderLimits();
+  resetForm();
+  refreshAll();
+  // Ask the browser to protect our data from automatic clean-up.
+  try { if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch (e) {}
+  // Offline + install support only when served over http(s).
+  if (/^https?:$/.test(location.protocol)) {
+    document.head.append(el('link', { rel: 'manifest', href: 'manifest.json' }));
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+init();
+</script>
+</body>
+</html>
