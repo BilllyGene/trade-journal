@@ -441,7 +441,9 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <div class="grid2">
           <div class="field"><label class="lbl" for="s-ghOwner">GitHub username</label><input type="text" id="s-ghOwner" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. BilllyGene"></div>
           <div class="field"><label class="lbl" for="s-ghRepo">Private repository name</label><input type="text" id="s-ghRepo" autocapitalize="off" autocorrect="off" spellcheck="false" value="trade-journal-data"></div>
-          <div class="field full"><label class="lbl" for="s-ghToken">Access token</label><input type="password" id="s-ghToken" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>
+          <div class="field full"><label class="lbl" for="s-ghToken">Access token</label>
+            <div class="inline-input"><input type="password" id="s-ghToken" autocomplete="off" spellcheck="false" placeholder="github_pat_…"><button type="button" class="icon-btn" id="tokenShow" style="padding:0 10px">Show</button></div>
+            <div class="hint" id="tokenHint"></div></div>
         </div>
         <p class="hint">The token is kept only in this browser on this device. It can open only the one repository you chose.</p>
         <div class="err" id="syncConnErr"></div>
@@ -499,7 +501,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.3';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -1732,6 +1734,13 @@ function mergeForSync(local, remote, lastSyncAt) {
   return { merged, toLocal, conflicts, sent };
 }
 
+// Catch copy/paste mistakes before asking GitHub.
+function checkTokenShape(token) {
+  if (/\s/.test(token)) return 'The token has a space or line break inside. Copy it again with the copy button next to it on GitHub.';
+  if (token.startsWith('github_pat_')) return token.length < 80 ? `This token is only ${token.length} characters long, but a full one is about 93. Part of it is missing: copy it again with the copy button next to it on GitHub.` : null;
+  if (/^gh[pousr]_/.test(token)) return null; // classic token: allowed
+  return 'This does not look like a GitHub token. A token starts with "github_pat_" and is about 93 characters long. Copy it with the copy button right after generating it.';
+}
 const sync = (() => {
   let cfg = null;                 // {key:'sync', owner, repo, token, auto, lastSyncAt}
   let state = { status: 'off', msg: '' }; // off | busy | ok | offline | err
@@ -1753,10 +1762,10 @@ const sync = (() => {
     if (res.ok) return res.status === 204 ? null : res.json();
     let data = {}; try { data = await res.json(); } catch (e) {}
     const m = data.message || res.statusText || '';
-    if (res.status === 401) throw new SyncError(401, 'GitHub did not accept the access token. It may be wrong or expired. Make a new token and connect again.');
+    if (res.status === 401) throw new SyncError(401, 'GitHub did not accept the access token. It may be incomplete, old (regenerating a token cancels the old code) or expired. Copy the new token right after generating it and paste it again.');
     if (res.status === 403 && /rate limit/i.test(m)) throw new SyncError(403, 'GitHub says too many requests. Sync will try again later.');
     if (res.status === 403) throw new SyncError(403, 'The token is not allowed to change this repository. Give it "Contents: Read and write" access to this repository.');
-    if (res.status === 404) throw new SyncError(404, 'Repository not found. Check the username and repository name, and that the token has access to this repository.');
+    if (res.status === 404) throw new SyncError(404, `Repository "${c.owner}/${c.repo}" not found. Check the spelling exactly as GitHub shows it (watch for an extra "-" at the end), and that the token was given access to this repository.`);
     if (res.status === 409 && /empty/i.test(m)) throw new SyncError('empty', m);
     if (res.status === 409 || res.status === 422) throw new SyncError(res.status, 'Another device synced at the same moment.', true);
     throw new SyncError(res.status, `GitHub error ${res.status}: ${m}`);
@@ -1888,6 +1897,8 @@ const sync = (() => {
   async function connect(ownerIn, repoIn, tokenIn) {
     const { owner, repo } = parseRepoInput(ownerIn, repoIn); const token = (tokenIn || '').trim();
     if (!owner || !repo || !token) throw new SyncError('input', 'Fill in your GitHub username, the repository name and the access token.');
+    const tokenProblem = checkTokenShape(token);
+    if (tokenProblem) throw new SyncError('input', tokenProblem);
     const test = { owner, repo, token };
     await checkRepo(test); // throws a clear message if wrong, public or unreachable
     await saveCfg({ owner, repo, token, auto: true, lastSyncAt: (cfg && cfg.owner === owner && cfg.repo === repo) ? cfg.lastSyncAt : null });
@@ -2018,6 +2029,8 @@ function wire() {
     finally { $('syncConnect').disabled = false; $('syncConnect').textContent = 'Connect and sync'; }
   });
   $('syncChip').addEventListener('click', openSyncSettings);
+  $('tokenShow').addEventListener('click', () => { const t = $('s-ghToken'); const show = t.type === 'password'; t.type = show ? 'text' : 'password'; $('tokenShow').textContent = show ? 'Hide' : 'Show'; });
+  $('s-ghToken').addEventListener('input', () => { const v = $('s-ghToken').value.trim(); $('tokenHint').textContent = v ? `${v.length} characters${v.startsWith('github_pat_') ? (v.length >= 80 ? ' ✓ looks complete' : ' (too short: a full token is about 93)') : ''}` : ''; });
   $('syncNow').addEventListener('click', () => sync.run({ manual: true }));
   $('syncAuto').addEventListener('change', e => sync.setAuto(e.target.checked));
   $('syncOff').addEventListener('click', async () => { if (confirm('Disconnect sync on this device? Your trades stay here and on GitHub. You can connect again any time.')) await sync.disconnect(); });

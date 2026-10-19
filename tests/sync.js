@@ -67,7 +67,7 @@ async function imagesOk(page) {
   const server = spawn('python3', ['-m', 'http.server', String(PORT), '--bind', '127.0.0.1'], { cwd: ROOT, stdio: 'ignore' });
   await sleep(800);
   const browser = await chromium.launch();
-  const fake = new FakeGitHub({ owner: 'BilllyGene' });
+  const fake = new FakeGitHub({ owner: 'BilllyGene', token: 'github_pat_' + 'G'.repeat(82) });
   let laptop, phone;
   try {
     section('Merge rules (pure function)');
@@ -85,17 +85,21 @@ async function imagesOk(page) {
     check('clash detected when both changed since last sync (e: remote deletion lost to later edit)', JSON.stringify(mr.conflicts) === '["e:remote"]', mr);
 
     section('Connect: safety checks');
-    const pub = new FakeGitHub({ owner: 'BilllyGene', isPrivate: false });
+    const pub = new FakeGitHub({ owner: 'BilllyGene', isPrivate: false, token: 'github_pat_' + 'G'.repeat(82) });
     const pubPage = await device(browser, pub, 'pub');
     await connect(pubPage, pub);
     check('public repository is refused', (await pubPage.textContent('#syncConnErr')).includes('PUBLIC'));
     check('nothing written to a public repo', pub.head === null);
     await pubPage.context().close();
-    await connect(laptop, fake, { token: 'wrong' });
+    await connect(laptop, fake, { token: 'github_pat_tooShort123' });
+    check('short token caught before asking GitHub', (await laptop.textContent('#syncConnErr')).includes('Part of it is missing'));
+    await connect(laptop, fake, { token: 'abc123' });
+    check('non-token text caught', (await laptop.textContent('#syncConnErr')).includes('does not look like a GitHub token'));
+    await connect(laptop, fake, { token: 'github_pat_' + 'x'.repeat(82) });
     check('wrong token: clear message', (await laptop.textContent('#syncConnErr')).includes('did not accept the access token'));
     check('wrong token is not stored', await laptop.evaluate(async () => !(await store.get('meta', 'sync'))));
     await connect(laptop, fake, { repo: 'nope' });
-    check('missing repo: clear message', (await laptop.textContent('#syncConnErr')).includes('Repository not found'));
+    check('missing repo: clear message', (await laptop.textContent('#syncConnErr')).includes('not found. Check the spelling'));
 
     section('Laptop: first sync into an empty private repo');
     await logTrade(laptop, { notes: 'laptop trade 1', pnl: 120, shots: [[0, 'chart-small.jpg'], [1, 'chart-webp.webp']] });
@@ -208,7 +212,7 @@ async function imagesOk(page) {
     check('back online: syncs by itself', ok);
 
     section('Token problem shows clearly');
-    const savedToken = fake.token; fake.token = 'rotated';
+    const savedToken = fake.token; fake.token = 'github_pat_' + 'R'.repeat(82);
     await syncNow(phone);
     check('expired token: red chip + message in Settings', (await phone.getAttribute('#syncChip', 'class')).includes('err') && (await phone.textContent('#syncMsg')).includes('token'));
     fake.token = savedToken; await syncNow(phone);
@@ -226,7 +230,7 @@ async function imagesOk(page) {
     check(`wiped phone gets all ${before} trades back from GitHub`, after.length === before, { before, after: after.length });
     const pi2 = await imagesOk(phone);
     check('and its screenshots', pi2.total > 0 && pi2.ok === pi2.total, pi2);
-    check('backup export still excludes the token', await phone.evaluate(async () => { const b = await buildBackup(); return !(await b.blob.text()).includes('good-token'); }));
+    check('backup export still excludes the token', await phone.evaluate(async () => { const b = await buildBackup(); return !(await b.blob.text()).includes('github_pat_GGGG'); }));
 
     section('Disconnect');
     await phone.click('nav button[data-tab="settings"]');
