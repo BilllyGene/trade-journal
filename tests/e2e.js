@@ -85,7 +85,7 @@ async function imagesLoaded(page, scope) {
     check('no NaN / Infinity anywhere', !/NaN|Infinity|undefined/.test(await page.textContent('#tab-dashboard')));
     check('"Log your first trade" button visible', await page.isVisible('#dashEmpty button'));
     check('reminders shown', (await page.textContent('#reminders')).includes('Keep risk the same'));
-    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.0');
+    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.1');
     const sw = await page.evaluate(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     check('service worker active over http', sw);
     check('no errors on fresh start', errors.length === 0, errors);

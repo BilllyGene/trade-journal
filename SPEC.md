@@ -195,7 +195,11 @@ This JSON export/import is also how the trader moves data between laptop and pho
 
 ---
 
-## 9. Phase 2: automatic sync (DO NOT BUILD YET)
+## 9. Phase 2: automatic sync (BUILT in v1.1)
+
+> **Update (v1.1):** the trader asked for sync, and it is now built. Design: a private GitHub repository (`trade-journal-data`) accessed straight from the browser with a fine-grained token (Contents read/write, that repo only), stored per device in IndexedDB `meta/sync` and never put in backups. Remote layout: `journal.json` (all trades incl. deleted markers, plus settings), `shots/<id>.<ext>`, `conflicts/`. Each sync = one git commit (fast-forward only, retried if another device pushed first). Per trade the later `updatedAt` wins; if both devices changed a trade since the last sync, the losing copy goes to `conflicts/`. Settings use the same rule, except theme, which stays per device. The app refuses public repositories. Code: the `sync` module and `mergeForSync` in `index.html`. Tests: `tests/sync.js` with `tests/fake-github.js`.
+
+Original phase-2 notes:
 
 The trader wants laptop and phone to sync automatically if possible. Do not build it in this phase. But keep the data model sync-ready (the `id`, `updatedAt`, `deleted` fields above) and keep storage access behind one small module (`store.get/put/delete/list`) so a sync layer can be added later without rewriting the app. Mention in the README that sync is planned as a later add-on.
 

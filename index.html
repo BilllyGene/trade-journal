@@ -54,7 +54,7 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 .wrap { max-width: 900px; margin: 0 auto; padding: 0 12px 80px; }
-header { padding: 18px 2px 8px; }
+header { padding: 18px 2px 8px; display: flex; gap: 8px; align-items: flex-start; }
 h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
 .sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 h2 { font-size: 16px; margin: 0 0 10px; }
@@ -96,7 +96,7 @@ button.btn:disabled { opacity: .45; cursor: not-allowed; }
 .grid2 .full { grid-column: 1 / -1; }
 .field label.lbl { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
 .field .req { color: var(--red); }
-input[type=text], input[type=date], input[type=time], input[type=number], select, textarea {
+input[type=text], input[type=password], input[type=date], input[type=time], input[type=number], select, textarea {
   width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--input-border);
   background: var(--input); color: var(--text); font: inherit; font-size: 16px;
 }
@@ -216,6 +216,18 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin: 8px 0; }
 .check input { width: 20px; height: 20px; margin: 1px 0 0; flex: 0 0 auto; }
 
+/* Sync */
+.sync-chip { border: 1px solid var(--border); background: var(--card); color: var(--muted); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12.5px; font-weight: 600; min-height: 32px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap; }
+.sync-chip i, .sync-status i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--grey); flex: 0 0 auto; }
+.sync-chip.ok i, .sync-status.ok i { background: var(--green); }
+.sync-chip.busy i { background: var(--blue); }
+.sync-chip.err { color: var(--red); border-color: var(--red); }
+.sync-chip.err i, .sync-status.err i { background: var(--red); }
+.sync-status { font-weight: 600; font-size: 14px; display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.sync-status.ok { color: var(--green); } .sync-status.err { color: var(--red); }
+.steps { margin: 6px 0 10px; padding-left: 20px; font-size: 14px; }
+.steps li { margin: 4px 0; }
+
 /* Lightbox, toast, banner */
 #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 50px 8px 12px; }
 #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
@@ -242,8 +254,8 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 <body>
 <div class="wrap">
   <header>
-    <h1>Trade Journal</h1>
-    <p class="sub">XAUUSD · Track, review, improve</p>
+    <div style="flex:1;min-width:0"><h1>Trade Journal</h1><p class="sub">XAUUSD · Track, review, improve</p></div>
+    <button type="button" id="syncChip" class="sync-chip hidden" data-goto="settings"></button>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -415,6 +427,38 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       <div class="row" style="margin-top:8px"><span class="spacer"></span><button type="button" class="btn primary small" id="saveLimits">Save</button></div>
     </div>
 
+    <div class="card" id="syncCard">
+      <h2>Sync between devices</h2>
+      <div id="syncSetup">
+        <p class="small" style="margin-top:0">Keeps your laptop and phone the same, automatically. It uses a free <strong>private</strong> GitHub repository as a shared safe for your journal. Every sync is also saved in that repository's history, so it works as an extra backup.</p>
+        <p class="small" style="margin:0"><strong>One-time setup</strong> (click-by-click steps are in the README, section "Sync"):</p>
+        <ol class="steps">
+          <li>On GitHub, create a new <strong>private</strong> repository named <code>trade-journal-data</code>.</li>
+          <li>Create a <strong>fine-grained access token</strong>: only that repository, permission <em>Contents: Read and write</em>.</li>
+          <li>Fill in below and tap Connect. Do the same on your other device with the same token.</li>
+        </ol>
+        <div class="grid2">
+          <div class="field"><label class="lbl" for="s-ghOwner">GitHub username</label><input type="text" id="s-ghOwner" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. BilllyGene"></div>
+          <div class="field"><label class="lbl" for="s-ghRepo">Private repository name</label><input type="text" id="s-ghRepo" autocapitalize="off" autocorrect="off" spellcheck="false" value="trade-journal-data"></div>
+          <div class="field full"><label class="lbl" for="s-ghToken">Access token</label><input type="password" id="s-ghToken" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>
+        </div>
+        <p class="hint">The token is kept only in this browser on this device. It can open only the one repository you chose.</p>
+        <div class="err" id="syncConnErr"></div>
+        <div class="row" style="margin-top:8px"><button type="button" class="btn primary" id="syncConnect">Connect and sync</button></div>
+      </div>
+      <div id="syncOn" class="hidden">
+        <div id="syncStatus" class="sync-status"></div>
+        <p class="small muted" id="syncWhere" style="margin:0 0 4px"></p>
+        <p class="small" id="syncMsg" style="margin:0 0 6px;color:var(--red)"></p>
+        <label class="check"><input type="checkbox" id="syncAuto"><span>Sync automatically (when the app opens, after every change, and every few minutes)</span></label>
+        <div class="row">
+          <button type="button" class="btn primary" id="syncNow">Sync now</button>
+          <button type="button" class="btn" id="syncOff">Disconnect this device</button>
+        </div>
+        <p class="hint">Disconnecting only removes the token from this device. Your trades stay here and on GitHub.</p>
+      </div>
+    </div>
+
     <div class="card">
       <h2>Data</h2>
       <div class="kv" id="dataInfo"></div>
@@ -437,7 +481,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 
     <div class="card">
       <h2>About</h2>
-      <p class="small" style="margin:0">Trade Journal <strong id="appVersion"></strong> · Data is stored only in this browser on this device. Automatic sync between devices is planned as a later add-on.</p>
+      <p class="small" style="margin:0">Trade Journal <strong id="appVersion"></strong> · Data is stored in this browser on this device and, if you turn on sync, in your own private GitHub repository. Nothing goes anywhere else.</p>
     </div>
   </section>
 </div>
@@ -454,7 +498,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.1';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -653,6 +697,7 @@ const store = (() => {
   function reqP(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
   async function get(name, key) { return reqP(db.transaction(name).objectStore(name).get(key)); }
   async function list(name) { return reqP(db.transaction(name).objectStore(name).getAll()); }
+  async function keys(name) { return reqP(db.transaction(name).objectStore(name).getAllKeys()); }
   // Run several writes in ONE transaction: all succeed or none do.
   // ops: [{op:'put'|'delete'|'clear', store, value?, key?}]
   function batch(ops) {
@@ -676,7 +721,7 @@ const store = (() => {
   }
   const put = (name, value) => batch([{ op: 'put', store: name, value }]);
   const del = (name, key) => batch([{ op: 'delete', store: name, key }]);
-  return { open, get, put, delete: del, list, batch };
+  return { open, get, put, delete: del, list, keys, batch };
 })();
 
 /* =========================================================================
@@ -747,6 +792,7 @@ async function saveSettings(patch, markEdited = true) {
   if (markEdited) next.updatedAt = new Date().toISOString();
   await store.put('meta', next);
   settings = next;
+  if (markEdited) sync.schedule();
 }
 async function saveDevice(patch) {
   const next = Object.assign({}, device, patch);
@@ -1075,6 +1121,7 @@ async function onSave(e) {
   if (idx >= 0) trades[idx] = rec; else trades.push(rec);
   draft.dirty = false;
   toast(orig ? 'Trade updated' : 'Trade saved');
+  sync.schedule();
   resetForm();
   refreshAll();
   showTab('log');
@@ -1112,7 +1159,9 @@ function renderDashboard() {
   const sinceCount = live.filter(t => !last || new Date(t.createdAt) > last).length;
   const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
   let nudgeMsg = null;
-  if (live.length && !last) nudgeMsg = 'You have not made a backup yet. A backup keeps your journal safe if this browser loses its data.';
+  const syncedRecently = sync.connected() && sync.lastSyncAt && (Date.now() - new Date(sync.lastSyncAt)) < 7 * 86400000;
+  if (syncedRecently) nudgeMsg = null;
+  else if (live.length && !last) nudgeMsg = 'You have not made a backup yet. A backup keeps your journal safe if this browser loses its data.';
   else if (last && live.length && (days > 7 || sinceCount > 10)) nudgeMsg = `Last backup was ${days === 0 ? 'today' : days === 1 ? '1 day ago' : days + ' days ago'}, with ${sinceCount} new trade${sinceCount === 1 ? '' : 's'} since. Time for a fresh one.`;
   if (nudgeMsg) nudge.append(el('span', { style: 'flex:1;min-width:200px' }, nudgeMsg), el('button', { type: 'button', class: 'btn small', onclick: exportJson }, 'Back up now'));
   nudge.classList.toggle('hidden', !nudgeMsg);
@@ -1364,6 +1413,7 @@ async function deleteTrade(id) {
   trades[trades.findIndex(x => x.id === id)] = normalizeTrade(tomb);
   if (draft.editingId === id) resetForm();
   toast('Trade deleted');
+  sync.schedule();
   refreshAll();
 }
 
@@ -1580,7 +1630,7 @@ async function doImport(mode) {
   const { parsed, fresh, newer } = pendingImport;
   const useSettings = $('impSettings') ? $('impSettings').checked : false;
   if (mode === 'replace') {
-    if (!confirm(`Replace ALL data on this device with the backup?\n\nThe ${liveTrades().length} trades here will be removed.`)) return;
+    if (!confirm(`Replace ALL data on this device with the backup?\n\nThe ${liveTrades().length} trades here will be removed.${sync.connected() ? '\n\nSync is on: trades that are in GitHub but not in this backup will come back on the next sync.' : ''}`)) return;
     if (!confirm('Are you sure? This cannot be undone. (Tip: export a backup of this device first.)')) return;
   }
   const ops = []; const shotOp = id => { const s = parsed.shots.get(id); ops.push({ op: 'put', store: 'shots', value: { id, tradeId: s.tradeId || null, blob: base64ToBlob(s.data, s.type), type: s.type || 'image/jpeg', createdAt: s.createdAt || null } }); };
@@ -1611,15 +1661,286 @@ async function doImport(mode) {
   else if (!draft.dirty && !draft.editingId) resetForm();
   ckWork = clone(settings.checklist); renderCkEditor(); renderLimits(); renderThemeSeg(); applyTheme();
   refreshAll();
+  sync.schedule();
   toast(mode === 'replace' ? `Replaced: ${liveTrades().length} trades loaded` : `Merged: ${fresh.length} added, ${newer.length} updated`);
 }
 async function wipeAll() {
-  if (!confirm('Delete ALL trades and screenshots on this device?\n\nExport a backup first if you may need them.')) return;
+  if (!confirm('Delete ALL trades and screenshots on this device?\n\nExport a backup first if you may need them.' + (sync.connected() ? '\n\nSync is on: this clears THIS device only. Your trades will download again from GitHub on the next sync. To remove a trade everywhere, delete it from the Trade log.' : ''))) return;
   if (!confirm('Last check: this cannot be undone. Delete everything?')) return;
   try { await store.batch([{ op: 'clear', store: 'trades' }, { op: 'clear', store: 'shots' }]); }
   catch (err) { toast('Not deleted. ' + storageAdvice(err), true); return; }
   urlCache.forEach(u => URL.revokeObjectURL(u)); urlCache.clear(); pendingBlobs.clear();
   trades = []; resetForm(); refreshAll(); toast('All trades deleted');
+}
+
+/* =========================================================================
+   Sync between devices, through a PRIVATE GitHub repository.
+   Remote layout:  journal.json (all trades + settings), shots/<id>.<ext>,
+   conflicts/ (copies of versions that lost a same-trade edit clash).
+   Every sync is one git commit, so the repo history is also a backup.
+   Rule per trade: the copy with the later updatedAt wins.
+   ========================================================================= */
+const SYNC_FILE = 'journal.json';
+class SyncError extends Error {
+  constructor(code, message, retry = false) { super(message); this.code = code; this.retry = retry; }
+}
+function textToB64(text) {
+  const bytes = new TextEncoder().encode(text); let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function b64ToText(b64) {
+  const bin = atob(b64.replace(/\s/g, '')); const u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(u);
+}
+function extForType(type) { return /webp/i.test(type) ? 'webp' : /png/i.test(type) ? 'png' : 'jpg'; }
+function typeForExt(ext) { return ext === 'webp' ? 'image/webp' : ext === 'png' ? 'image/png' : 'image/jpeg'; }
+function deviceKind() { return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'phone' : 'laptop'; }
+function agoText(iso) {
+  if (!iso) return 'never';
+  const s = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+  const d = Math.floor(s / 86400); return d === 1 ? '1 day ago' : `${d} days ago`;
+}
+
+// Pure merge (no I/O). lastSyncAt = when this device last synced, used to spot clashes.
+function mergeForSync(local, remote, lastSyncAt) {
+  const L = new Map(local.map(t => [t.id, t])), R = new Map(remote.map(t => [t.id, t]));
+  const merged = [], toLocal = [], conflicts = []; let sent = 0;
+  for (const id of new Set([...L.keys(), ...R.keys()])) {
+    const l = L.get(id), r = R.get(id);
+    if (l && !r) { merged.push(l); sent++; }
+    else if (!l && r) { merged.push(r); toLocal.push(r); }
+    else if (r.updatedAt > l.updatedAt) {
+      merged.push(r); toLocal.push(r);
+      if (lastSyncAt && l.updatedAt > lastSyncAt) conflicts.push({ id, kept: r, replaced: l, replacedSide: 'local' });
+    } else if (l.updatedAt > r.updatedAt) {
+      merged.push(l); sent++;
+      if (lastSyncAt && r.updatedAt > lastSyncAt) conflicts.push({ id, kept: l, replaced: r, replacedSide: 'remote' });
+    } else merged.push(l);
+  }
+  return { merged, toLocal, conflicts, sent };
+}
+
+const sync = (() => {
+  let cfg = null;                 // {key:'sync', owner, repo, token, auto, lastSyncAt}
+  let state = { status: 'off', msg: '' }; // off | busy | ok | offline | err
+  let running = null, again = false, timer = null;
+
+  const connected = () => !!(cfg && cfg.token && cfg.owner && cfg.repo);
+  async function load() { cfg = (await store.get('meta', 'sync')) || null; if (connected()) state = { status: cfg.lastSyncAt ? 'ok' : 'off', msg: '' }; render(); }
+  async function saveCfg(patch) { cfg = Object.assign({ key: 'sync' }, cfg, patch); await store.put('meta', cfg); }
+
+  async function api(c, method, path, body) {
+    let res;
+    try {
+      res = await fetch(`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}${path}`, {
+        method, cache: 'no-store',
+        headers: Object.assign({ Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + c.token }, body ? { 'Content-Type': 'application/json' } : {}),
+        body: body ? JSON.stringify(body) : undefined
+      });
+    } catch (e) { throw new SyncError('offline', 'No internet connection. Sync will run when you are back online.'); }
+    if (res.ok) return res.status === 204 ? null : res.json();
+    let data = {}; try { data = await res.json(); } catch (e) {}
+    const m = data.message || res.statusText || '';
+    if (res.status === 401) throw new SyncError(401, 'GitHub did not accept the access token. It may be wrong or expired. Make a new token and connect again.');
+    if (res.status === 403 && /rate limit/i.test(m)) throw new SyncError(403, 'GitHub says too many requests. Sync will try again later.');
+    if (res.status === 403) throw new SyncError(403, 'The token is not allowed to change this repository. Give it "Contents: Read and write" access to this repository.');
+    if (res.status === 404) throw new SyncError(404, 'Repository not found. Check the username and repository name, and that the token has access to this repository.');
+    if (res.status === 409 && /empty/i.test(m)) throw new SyncError('empty', m);
+    if (res.status === 409 || res.status === 422) throw new SyncError(res.status, 'Another device synced at the same moment.', true);
+    throw new SyncError(res.status, `GitHub error ${res.status}: ${m}`);
+  }
+
+  async function checkRepo(c) {
+    const info = await api(c, 'GET', '');
+    if (!info.private) throw new SyncError('public', `The repository "${c.owner}/${c.repo}" is PUBLIC, so anyone could read your trades. Use a private repository.`);
+    return info.default_branch || 'main';
+  }
+
+  async function readHead(c, branch) {
+    try { return (await api(c, 'GET', `/git/ref/heads/${branch}`)).object.sha; }
+    catch (e) {
+      if (e.code !== 'empty' && e.code !== 404) throw e;
+      // Empty repository: create a first commit so the git data API can be used.
+      await api(c, 'PUT', '/contents/README.md', { message: 'Set up Trade Journal sync', content: textToB64('# Trade Journal data\n\nCreated by the Trade Journal app. Keep this repository PRIVATE.\nDo not edit these files by hand.\n') });
+      return (await api(c, 'GET', `/git/ref/heads/${branch}`)).object.sha;
+    }
+  }
+
+  async function pool(items, n, fn) {
+    const out = []; let i = 0;
+    await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k]); } }));
+    return out;
+  }
+
+  async function runOnce() {
+    const c = cfg; const startedAt = new Date().toISOString();
+    const branch = await checkRepo(c);
+    const head = await readHead(c, branch);
+    const commit = await api(c, 'GET', `/git/commits/${head}`);
+    const tree = await api(c, 'GET', `/git/trees/${commit.tree.sha}?recursive=1`);
+    const files = new Map(tree.tree.filter(t => t.type === 'blob').map(t => [t.path, t.sha]));
+    const remoteShots = new Map();
+    files.forEach((sha, p) => { const m = /^shots\/([^/]+)\.(jpg|png|webp)$/.exec(p); if (m) remoteShots.set(m[1], { path: p, sha, type: typeForExt(m[2]) }); });
+
+    let journal = { trades: [], settings: null };
+    if (files.has(SYNC_FILE)) {
+      const b = await api(c, 'GET', `/git/blobs/${files.get(SYNC_FILE)}`);
+      try { journal = JSON.parse(b64ToText(b.content)); } catch (e) { throw new SyncError('bad', 'The journal.json file on GitHub is damaged. Nothing was changed. Check the repository history.'); }
+      if (!journal || !Array.isArray(journal.trades) || (journal.app && journal.app !== BACKUP_APP_ID)) throw new SyncError('bad', 'The repository holds files that are not from this app. Use a separate, empty private repository.');
+    }
+    const remoteTrades = journal.trades.filter(r => r && r.id != null).map(normalizeTrade);
+    const m = mergeForSync(trades.slice(), remoteTrades, c.lastSyncAt);
+
+    // Settings: later edit wins. Theme stays per device.
+    const rs = journal.settings ? normalizeSettings(journal.settings) : null;
+    const settingsDown = !!rs && (rs.updatedAt || '') > (settings.updatedAt || '');
+    const settingsUp = !rs || (settings.updatedAt || '') > (rs.updatedAt || '');
+
+    // Download screenshots this device is missing.
+    const localShots = new Set(await store.keys('shots'));
+    const needDown = [...new Set(m.merged.filter(t => !t.deleted).flatMap(shotIdsOf))].filter(id => !localShots.has(id) && remoteShots.has(id));
+    const downloaded = new Map();
+    await pool(needDown, 4, async id => {
+      const r = remoteShots.get(id); const b = await api(c, 'GET', `/git/blobs/${r.sha}`);
+      downloaded.set(id, base64ToBlob(b.content.replace(/\s/g, ''), r.type));
+    });
+    // Losing local versions: keep their screenshots in the repo under conflicts/ before they are removed here.
+    const lostLocal = m.conflicts.filter(x => x.replacedSide === 'local');
+
+    // Build the remote commit first; the device is only changed after GitHub accepts it.
+    const entries = [];
+    const liveIds = new Set(m.merged.filter(t => !t.deleted).flatMap(shotIdsOf));
+    const upIds = [...liveIds].filter(id => !remoteShots.has(id) && localShots.has(id));
+    const conflictShotIds = [...new Set(lostLocal.flatMap(x => shotIdsOf(x.replaced)))].filter(id => localShots.has(id) && !liveIds.has(id));
+    await pool(upIds.map(id => [id, 'shots']).concat(conflictShotIds.map(id => [id, 'conflicts/shots'])), 3, async ([id, dir]) => {
+      const rec = await store.get('shots', id); if (!rec || !rec.blob) return;
+      const b = await api(c, 'POST', '/git/blobs', { content: await blobToBase64(rec.blob), encoding: 'base64' });
+      entries.push({ path: `${dir}/${id}.${extForType(rec.type || rec.blob.type)}`, mode: '100644', type: 'blob', sha: b.sha });
+    });
+    remoteShots.forEach((r, id) => { if (!liveIds.has(id)) entries.push({ path: r.path, mode: '100644', type: 'blob', sha: null }); });
+    for (const x of m.conflicts) {
+      const body = JSON.stringify({ note: 'Two devices changed this trade between syncs. The app kept "kept" (the later edit). "replaced" is the other version, saved here so nothing is lost.', kept: x.kept, replaced: x.replaced }, null, 1);
+      const b = await api(c, 'POST', '/git/blobs', { content: body, encoding: 'utf-8' });
+      entries.push({ path: `conflicts/${startedAt.slice(0, 19).replace(/:/g, '-')}-${x.id}.json`, mode: '100644', type: 'blob', sha: b.sha });
+    }
+    const journalChanged = m.sent > 0 || settingsUp || (files.has(SYNC_FILE) === false);
+    if (journalChanged || entries.length) {
+      const { key, ...cleanSettings } = settingsDown ? rs : settings;
+      const out = { app: BACKUP_APP_ID, format: 1, appVersion: APP_VERSION, updatedAt: startedAt, settings: cleanSettings, trades: m.merged.slice().sort(chronoCmp) };
+      const jb = await api(c, 'POST', '/git/blobs', { content: JSON.stringify(out), encoding: 'utf-8' });
+      entries.push({ path: SYNC_FILE, mode: '100644', type: 'blob', sha: jb.sha });
+      const nt = await api(c, 'POST', '/git/trees', { base_tree: commit.tree.sha, tree: entries });
+      const nc = await api(c, 'POST', '/git/commits', { message: `Sync from ${deviceKind()}: ${m.sent} trade change${m.sent === 1 ? '' : 's'}`, tree: nt.sha, parents: [head] });
+      await api(c, 'PATCH', `/git/refs/heads/${branch}`, { sha: nc.sha, force: false }); // 422 if another device pushed first -> retry
+    }
+
+    // Apply to this device in one transaction.
+    await applyIncoming(m.toLocal, downloaded, settingsDown ? rs : null);
+    await saveCfg({ lastSyncAt: startedAt });
+    return { received: m.toLocal.length, sent: m.sent, conflicts: m.conflicts.length };
+  }
+
+  async function run({ manual = false } = {}) {
+    if (!connected()) return null;
+    if (running) { again = true; return running; }
+    clearTimeout(timer);
+    state = { status: 'busy', msg: '' }; render();
+    running = (async () => {
+      let result = null;
+      try {
+        for (let attempt = 1; ; attempt++) {
+          try { result = await runOnce(); break; }
+          catch (e) { if (e.retry && attempt < 4) { await new Promise(r => setTimeout(r, 400 * attempt)); continue; } throw e; }
+        }
+        state = { status: 'ok', msg: '' };
+        if (result.conflicts) toast(`Synced. ${result.conflicts} trade${result.conflicts === 1 ? ' was' : 's were'} edited on two devices: kept the later edit, the other copy is saved in GitHub (conflicts folder).`);
+        else if (manual || result.received) toast(`Synced: ${result.received} received, ${result.sent} sent`);
+      } catch (e) {
+        state = e.code === 'offline' ? { status: 'offline', msg: e.message } : { status: 'err', msg: e.message || String(e) };
+        if (manual) toast(state.msg, state.status === 'err');
+      } finally { running = null; render(); }
+      if (again) { again = false; schedule(300); }
+      return result;
+    })();
+    return running;
+  }
+  function schedule(delay = 3000) {
+    if (!connected() || !cfg.auto) return;
+    clearTimeout(timer); timer = setTimeout(() => run(), delay);
+  }
+  function parseRepoInput(owner, repo) {
+    const m = /github\.com\/([^/\s]+)\/([^/\s?#]+)/i.exec(repo || '') || /^([^/\s]+)\/([^/\s]+)$/.exec((repo || '').trim());
+    if (m) return { owner: m[1], repo: m[2].replace(/\.git$/, '') };
+    return { owner: (owner || '').trim().replace(/^@/, ''), repo: (repo || '').trim() };
+  }
+  async function connect(ownerIn, repoIn, tokenIn) {
+    const { owner, repo } = parseRepoInput(ownerIn, repoIn); const token = (tokenIn || '').trim();
+    if (!owner || !repo || !token) throw new SyncError('input', 'Fill in your GitHub username, the repository name and the access token.');
+    const test = { owner, repo, token };
+    await checkRepo(test); // throws a clear message if wrong, public or unreachable
+    await saveCfg({ owner, repo, token, auto: true, lastSyncAt: (cfg && cfg.owner === owner && cfg.repo === repo) ? cfg.lastSyncAt : null });
+    return run({ manual: true });
+  }
+  async function disconnect() {
+    clearTimeout(timer);
+    await saveCfg({ token: null }); state = { status: 'off', msg: '' }; render();
+  }
+  async function setAuto(on) { await saveCfg({ auto: !!on }); if (on) schedule(200); render(); }
+
+  function render() {
+    const chip = $('syncChip'), on = connected();
+    chip.classList.toggle('hidden', !on);
+    const label = { busy: 'Syncing…', ok: `Synced ${cfg && agoText(cfg.lastSyncAt)}`, offline: 'Offline', err: 'Sync problem', off: 'Not synced yet' }[state.status];
+    chip.className = 'sync-chip ' + ({ ok: 'ok', err: 'err', busy: 'busy' }[state.status] || '') + (on ? '' : ' hidden');
+    chip.replaceChildren(el('i'), label);
+    chip.title = state.msg || label;
+    $('syncSetup').classList.toggle('hidden', on);
+    $('syncOn').classList.toggle('hidden', !on);
+    if (on) {
+      const st = $('syncStatus');
+      st.className = 'sync-status ' + ({ ok: 'ok', err: 'err' }[state.status] || '');
+      st.replaceChildren(el('i'), state.status === 'ok' ? `Last synced ${agoText(cfg.lastSyncAt)}` : label);
+      $('syncWhere').textContent = `Connected to the private repository ${cfg.owner}/${cfg.repo}.`;
+      $('syncMsg').textContent = state.status === 'err' || state.status === 'offline' ? state.msg : '';
+      $('syncAuto').checked = !!cfg.auto;
+      $('syncNow').disabled = state.status === 'busy';
+    } else if (cfg && cfg.owner) {
+      if (!$('s-ghOwner').value) $('s-ghOwner').value = cfg.owner;
+      if (!$('s-ghRepo').value) $('s-ghRepo').value = cfg.repo;
+    }
+  }
+  return { load, run, schedule, connect, disconnect, setAuto, render, connected, get lastSyncAt() { return cfg && cfg.lastSyncAt; }, get auto() { return !!(cfg && cfg.auto); } };
+})();
+
+// Write records that came from elsewhere (sync), skipping any that this device changed more recently meanwhile.
+async function applyIncoming(incoming, downloaded, newSettings) {
+  const cur = new Map(trades.map(t => [t.id, t]));
+  const ops = [], written = [], dropped = [];
+  downloaded.forEach((blob, id) => ops.push({ op: 'put', store: 'shots', value: { id, tradeId: null, blob, type: blob.type || 'image/jpeg', createdAt: new Date().toISOString() } }));
+  for (const r of incoming) {
+    const c = cur.get(r.id);
+    if (c && c.updatedAt >= r.updatedAt) continue;
+    const keep = new Set(r.deleted ? [] : shotIdsOf(r));
+    if (c) shotIdsOf(c).forEach(id => { if (!keep.has(id) && !(draft && draftShotIds().includes(id))) { ops.push({ op: 'delete', store: 'shots', key: id }); dropped.push(id); } });
+    const rec = r.deleted ? Object.assign({}, r, { stepScreenshots: r.stepScreenshots.map(() => []), generalScreenshots: [] }) : r;
+    ops.push({ op: 'put', store: 'trades', value: rec }); written.push(rec);
+  }
+  let s2 = null;
+  if (newSettings) { s2 = Object.assign({}, newSettings, { key: 'settings', theme: settings.theme }); ops.push({ op: 'put', store: 'meta', value: s2 }); }
+  if (!ops.length) return;
+  await store.batch(ops);
+  dropped.forEach(forgetShot);
+  written.forEach(rec => { const i = trades.findIndex(t => t.id === rec.id); if (i >= 0) trades[i] = rec; else trades.push(rec); });
+  if (s2) {
+    settings = s2; ckWork = clone(settings.checklist); renderCkEditor(); renderLimits();
+    if (!draft.dirty && !draft.editingId) resetForm(); else renderFormDynamic();
+  }
+  refreshAll();
 }
 
 /* =========================================================================
@@ -1683,6 +2004,22 @@ function wire() {
   $('exportCsv').addEventListener('click', exportCsv);
   $('importFile').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; onImportFile(f); });
   $('wipeAll').addEventListener('click', wipeAll);
+  // Sync
+  $('syncConnect').addEventListener('click', async () => {
+    $('syncConnErr').textContent = ''; $('syncConnect').disabled = true; $('syncConnect').textContent = 'Connecting…';
+    try { await sync.connect($('s-ghOwner').value, $('s-ghRepo').value, $('s-ghToken').value); $('s-ghToken').value = ''; }
+    catch (e) { $('syncConnErr').textContent = e.message || String(e); }
+    finally { $('syncConnect').disabled = false; $('syncConnect').textContent = 'Connect and sync'; }
+  });
+  $('syncNow').addEventListener('click', () => sync.run({ manual: true }));
+  $('syncAuto').addEventListener('change', e => sync.setAuto(e.target.checked));
+  $('syncOff').addEventListener('click', async () => { if (confirm('Disconnect sync on this device? Your trades stay here and on GitHub. You can connect again any time.')) await sync.disconnect(); });
+  window.addEventListener('online', () => sync.schedule(1000));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && (!sync.lastSyncAt || Date.now() - new Date(sync.lastSyncAt) > 60000)) sync.schedule(500);
+  });
+  setInterval(() => { if (document.visibilityState === 'visible') sync.schedule(0); }, 5 * 60000);
+  setInterval(() => sync.render(), 30000); // keep "synced X min ago" fresh
   try { if (navigator.canShare && navigator.canShare({ files: [new File(['x'], 'x.json', { type: 'application/json' })] })) $('shareJson').classList.remove('hidden'); } catch (e) {}
   // Lightbox
   $('lbClose').addEventListener('click', closeLightbox);
@@ -1711,6 +2048,7 @@ async function init() {
   ckWork = clone(settings.checklist); renderCkEditor(); renderLimits();
   resetForm();
   refreshAll();
+  try { await sync.load(); if (sync.connected() && sync.auto) sync.run(); } catch (e) { /* sync is optional */ }
   // Ask the browser to protect our data from automatic clean-up.
   try { if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch (e) {}
   // Offline + install support only when served over http(s).
