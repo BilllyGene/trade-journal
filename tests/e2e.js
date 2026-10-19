@@ -85,7 +85,7 @@ async function imagesLoaded(page, scope) {
     check('no NaN / Infinity anywhere', !/NaN|Infinity|undefined/.test(await page.textContent('#tab-dashboard')));
     check('"Log your first trade" button visible', await page.isVisible('#dashEmpty button'));
     check('reminders shown', (await page.textContent('#reminders')).includes('Keep risk the same'));
-    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.1');
+    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.2');
     const sw = await page.evaluate(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     check('service worker active over http', sw);
     check('no errors on fresh start', errors.length === 0, errors);
@@ -189,6 +189,8 @@ async function imagesLoaded(page, scope) {
     await page.setViewportSize({ width: 1100, height: 900 }); await page.waitForTimeout(100);
     check('charts never duplicated after redraws', (await page.locator('#equityChart svg').count()) === 1 && (await page.locator('#sessionChart svg').count()) === 1);
     check('backup reminder shown (never backed up)', await page.isVisible('#backupNudge'));
+    check('reminder says sync is off and offers Set up sync', (await page.textContent('#backupNudge')).includes('sync is off') && await page.isVisible('#backupNudge button:text-is("Set up sync")'));
+    check('header chip says Sync off', (await page.textContent('#syncChip')).includes('Sync off'));
     // Starting balance + limits
     await page.click('nav button[data-tab="settings"]');
     await page.fill('#s-startBal', '1000'); await page.fill('#s-maxWeek', '2'); await page.fill('#s-lossLimit', '150'); await page.fill('#s-maxDay', '3');

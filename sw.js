@@ -1,6 +1,6 @@
 // Service worker: lets the app open offline after the first visit.
 // Bump CACHE when releasing a new version so phones pick up the update.
-const CACHE = 'trade-journal-v1.1';
+const CACHE = 'trade-journal-v1.2';
 const FILES = ['./', './index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {

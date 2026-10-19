@@ -232,7 +232,7 @@ async function imagesOk(page) {
     await phone.click('nav button[data-tab="settings"]');
     await phone.click('#syncOff');
     check('token removed from this device', await phone.evaluate(async () => !(await store.get('meta', 'sync')).token));
-    check('chip hidden, setup shown again with name filled', (await phone.isHidden('#syncChip')) && (await phone.inputValue('#s-ghOwner')) === 'BilllyGene');
+    check('chip says Sync off, setup shown again with name filled', (await phone.textContent('#syncChip')).includes('Sync off') && (await phone.inputValue('#s-ghOwner')) === 'BilllyGene');
     check('trades kept after disconnect', (await live(phone)).length === before);
 
     check('no page errors on either device', laptop.errors.length === 0 && phone.errors.length === 0, laptop.errors.concat(phone.errors));

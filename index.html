@@ -221,6 +221,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 .sync-chip i, .sync-status i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--grey); flex: 0 0 auto; }
 .sync-chip.ok i, .sync-status.ok i { background: var(--green); }
 .sync-chip.busy i { background: var(--blue); }
+.sync-chip.off { border-style: dashed; }
 .sync-chip.err { color: var(--red); border-color: var(--red); }
 .sync-chip.err i, .sync-status.err i { background: var(--red); }
 .sync-status { font-weight: 600; font-size: 14px; display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
@@ -255,7 +256,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 <div class="wrap">
   <header>
     <div style="flex:1;min-width:0"><h1>Trade Journal</h1><p class="sub">XAUUSD · Track, review, improve</p></div>
-    <button type="button" id="syncChip" class="sync-chip hidden" data-goto="settings"></button>
+    <button type="button" id="syncChip" class="sync-chip hidden" title="Sync between devices"></button>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -498,7 +499,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -1160,10 +1161,15 @@ function renderDashboard() {
   const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
   let nudgeMsg = null;
   const syncedRecently = sync.connected() && sync.lastSyncAt && (Date.now() - new Date(sync.lastSyncAt)) < 7 * 86400000;
+  const syncOff = !sync.connected();
   if (syncedRecently) nudgeMsg = null;
-  else if (live.length && !last) nudgeMsg = 'You have not made a backup yet. A backup keeps your journal safe if this browser loses its data.';
+  else if (live.length && !last) nudgeMsg = syncOff
+    ? 'Your trades are only saved on this device, and sync is off, so your other device cannot see them. Set up sync (Settings → Sync between devices), or make a backup.'
+    : 'You have not made a backup yet. A backup keeps your journal safe if this browser loses its data.';
   else if (last && live.length && (days > 7 || sinceCount > 10)) nudgeMsg = `Last backup was ${days === 0 ? 'today' : days === 1 ? '1 day ago' : days + ' days ago'}, with ${sinceCount} new trade${sinceCount === 1 ? '' : 's'} since. Time for a fresh one.`;
-  if (nudgeMsg) nudge.append(el('span', { style: 'flex:1;min-width:200px' }, nudgeMsg), el('button', { type: 'button', class: 'btn small', onclick: exportJson }, 'Back up now'));
+  if (nudgeMsg) nudge.append(el('span', { style: 'flex:1;min-width:200px' }, nudgeMsg),
+    syncOff ? el('button', { type: 'button', class: 'btn small', onclick: openSyncSettings }, 'Set up sync') : null,
+    el('button', { type: 'button', class: 'btn small', onclick: exportJson }, 'Back up now'));
   nudge.classList.toggle('hidden', !nudgeMsg);
 
   $('dashEmpty').classList.toggle('hidden', live.length > 0);
@@ -1208,6 +1214,7 @@ function renderDashboard() {
 
   renderCharts();
 }
+function openSyncSettings() { showTab('settings'); $('syncCard').scrollIntoView({ block: 'start' }); }
 function addDays(s, n) { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d + n)); }
 
 function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -1863,7 +1870,7 @@ const sync = (() => {
       } catch (e) {
         state = e.code === 'offline' ? { status: 'offline', msg: e.message } : { status: 'err', msg: e.message || String(e) };
         if (manual) toast(state.msg, state.status === 'err');
-      } finally { running = null; render(); }
+      } finally { running = null; render(); renderDashboard(); }
       if (again) { again = false; schedule(300); }
       return result;
     })();
@@ -1888,17 +1895,16 @@ const sync = (() => {
   }
   async function disconnect() {
     clearTimeout(timer);
-    await saveCfg({ token: null }); state = { status: 'off', msg: '' }; render();
+    await saveCfg({ token: null }); state = { status: 'off', msg: '' }; render(); renderDashboard();
   }
   async function setAuto(on) { await saveCfg({ auto: !!on }); if (on) schedule(200); render(); }
 
   function render() {
     const chip = $('syncChip'), on = connected();
-    chip.classList.toggle('hidden', !on);
-    const label = { busy: 'Syncing…', ok: `Synced ${cfg && agoText(cfg.lastSyncAt)}`, offline: 'Offline', err: 'Sync problem', off: 'Not synced yet' }[state.status];
-    chip.className = 'sync-chip ' + ({ ok: 'ok', err: 'err', busy: 'busy' }[state.status] || '') + (on ? '' : ' hidden');
+    const label = !on ? 'Sync off' : { busy: 'Syncing…', ok: `Synced ${agoText(cfg.lastSyncAt)}`, offline: 'Offline', err: 'Sync problem', off: 'Not synced yet' }[state.status];
+    chip.className = 'sync-chip ' + (on ? ({ ok: 'ok', err: 'err', busy: 'busy' }[state.status] || '') : 'off');
     chip.replaceChildren(el('i'), label);
-    chip.title = state.msg || label;
+    chip.title = !on ? 'Sync is off: trades stay on this device only. Tap to set it up.' : (state.msg || label);
     $('syncSetup').classList.toggle('hidden', on);
     $('syncOn').classList.toggle('hidden', !on);
     if (on) {
@@ -2011,6 +2017,7 @@ function wire() {
     catch (e) { $('syncConnErr').textContent = e.message || String(e); }
     finally { $('syncConnect').disabled = false; $('syncConnect').textContent = 'Connect and sync'; }
   });
+  $('syncChip').addEventListener('click', openSyncSettings);
   $('syncNow').addEventListener('click', () => sync.run({ manual: true }));
   $('syncAuto').addEventListener('change', e => sync.setAuto(e.target.checked));
   $('syncOff').addEventListener('click', async () => { if (confirm('Disconnect sync on this device? Your trades stay here and on GitHub. You can connect again any time.')) await sync.disconnect(); });
