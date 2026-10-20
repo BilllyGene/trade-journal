@@ -231,3 +231,10 @@ Then:
 - Commit all files. Push to the `main` branch if you are allowed to. If you must work on a separate branch, open a pull request into `main` and tell the trader in plain words how to merge it (GitHub Pages publishes from `main`).
 - Replace the existing placeholder `README.md`. Write it in plain, simple English covering: how to open the app (GitHub Pages link and opening the file directly), how to install it on a phone home screen, where the data is stored (in each device's browser), why backups matter, how to export, import and move data between laptop and phone, and how to turn on GitHub Pages (Settings → Pages → Deploy from branch → main → / root → Save). Explain that on a free GitHub account the repository must be public for Pages to work, that this makes only the app's code public, and that trades and screenshots are never uploaded to GitHub; they stay in the browser on each device.
 - Finish with a short summary of what was built and anything that did not pass testing.
+
+---
+
+## Later additions (after the original spec)
+
+- v1.4–v1.5: any instrument (Settings → Main instrument), account currency symbol, prices keep typed decimals, per-instrument dashboard picker and log filter.
+- v1.6: in-app Guide (header "?" button, a "How to…" link on each tab, 11 fold-out sections). Keep it in step with the app when features change.

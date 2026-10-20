@@ -85,8 +85,9 @@ async function imagesLoaded(page, scope) {
     check('empty dashboard shows zero trades', m0['Total trades'] === '0', m0);
     check('no NaN / Infinity anywhere', !/NaN|Infinity|undefined/.test(await page.textContent('#tab-dashboard')));
     check('"Log your first trade" button visible', await page.isVisible('#dashEmpty button'));
+    check('empty dashboard offers the quick guide', await page.isVisible('#dashEmpty button[data-help="h-start"]'));
     check('reminders shown', (await page.textContent('#reminders')).includes('Keep risk the same'));
-    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.5');
+    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.6');
     const sw = await page.evaluate(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     check('service worker active over http', sw);
     check('no errors on fresh start', errors.length === 0, errors);
@@ -301,7 +302,24 @@ async function imagesLoaded(page, scope) {
     await th.click(); await page.click('#lbClose');
     check('Close button closes lightbox', !(await page.isVisible('#lightbox')));
 
-    // ---------------------------------------------------------------- 10
+    // ---------------------------------------------------------------- guide
+    section('In-app guide');
+    await page.click('#helpBtn');
+    check('Guide button opens the guide', await page.isVisible('#help'));
+    check('guide has 11 sections', (await page.locator('#help details').count()) === 11);
+    await page.keyboard.press('Escape');
+    check('Escape closes the guide', await page.isHidden('#help'));
+    for (const [tab, sec] of [['dashboard', 'h-dashboard'], ['log', 'h-tradelog'], ['form', 'h-log'], ['settings', 'h-settings']]) {
+      await page.click(`nav button[data-tab="${tab}"]`);
+      await page.click(`#tab-${tab} .tab-help .linkbtn`);
+      check(`${tab} tab link opens section ${sec}`, await page.evaluate(id => !document.querySelector('#help').classList.contains('hidden') && document.getElementById(id).open, sec));
+      await page.click('#helpClose');
+    }
+    check('Close returns to the same tab', await page.isVisible('#tab-settings'));
+    await page.click('#helpBtn'); await page.click('#helpExpand');
+    check('Open all opens every section', await page.evaluate(() => [...document.querySelectorAll('#help details')].every(d => d.open)));
+    await page.click('#helpClose');
+
     section('10. CSV export');
     await page.click('nav button[data-tab="settings"]');
     const [csvDl] = await Promise.all([page.waitForEvent('download'), page.click('#exportCsv')]);
@@ -417,6 +435,13 @@ async function imagesLoaded(page, scope) {
       const sw = await page.evaluate(() => ({ s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
       check(`no horizontal scroll on ${tab}`, sw.s <= sw.c, sw);
     }
+    await page.click('#helpBtn'); await page.click('#helpExpand');
+    const hw = await page.evaluate(() => { const h = document.querySelector('#help'); return { s: h.scrollWidth, c: h.clientWidth }; });
+    check('guide fits a 380px phone (no sideways scroll)', hw.s <= hw.c, hw);
+    await page.screenshot({ path: path.join(OUT, 'phone-guide.png') });
+    await page.click('#helpClose');
+    const hdr = await page.evaluate(() => { const b = document.querySelector('#helpBtn').getBoundingClientRect(); return b.right <= document.documentElement.clientWidth; });
+    check('Guide button fits in the phone header', hdr);
     await page.click('nav button[data-tab="dashboard"]');
     await page.screenshot({ path: path.join(OUT, 'phone-dashboard.png'), fullPage: true });
     await page.click('nav button[data-tab="log"]');

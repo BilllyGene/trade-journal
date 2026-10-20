@@ -230,6 +230,29 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 .steps li { margin: 4px 0; }
 
 /* Lightbox, toast, banner */
+/* In-app guide */
+.help-btn { color: var(--blue); border-color: var(--blue); }
+.help-btn b { font-weight: 800; }
+@media (max-width: 420px) { .help-word { display: none; } .help-btn { min-width: 32px; justify-content: center; padding: 4px 8px; } }
+.tab-help { display: flex; justify-content: flex-end; margin: 2px 0 -2px; }
+.linkbtn { border: 0; background: none; color: var(--blue); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; padding: 6px 2px; min-height: 38px; }
+#help { position: fixed; inset: 0; z-index: 90; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.help-bar { position: sticky; top: 0; z-index: 1; display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: var(--card); border-bottom: 1px solid var(--border); }
+.help-bar strong { font-size: 17px; }
+.help-body { max-width: 760px; margin: 0 auto; padding: 12px 12px 60px; font-size: 15px; }
+#help details { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin: 8px 0; padding: 0 14px; }
+#help details[open] { padding-bottom: 10px; }
+#help summary { cursor: pointer; font-weight: 700; padding: 13px 0; list-style-position: outside; margin-left: 16px; }
+#help details[open] summary { border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+#help h4 { margin: 14px 0 4px; font-size: 14.5px; }
+#help li { margin: 4px 0; }
+#help .why { background: var(--blue-bg); border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+.help-table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 6px 0; }
+.help-table th, .help-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.help-table th { background: var(--grey-bg); }
+.help-table td:first-child { font-weight: 600; width: 34%; }
+#help code { background: var(--grey-bg); padding: 1px 4px; border-radius: 4px; }
+
 #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 50px 8px 12px; }
 #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
 #lightbox .close { position: absolute; top: 8px; right: 8px; min-width: 44px; height: 44px; border-radius: 22px; border: 0; background: rgba(255,255,255,.18); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; padding: 0 14px; }
@@ -257,6 +280,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
   <header>
     <div style="flex:1;min-width:0"><h1>Trade Journal</h1><p class="sub" id="subtitle">XAUUSD · Track, review, improve</p></div>
     <button type="button" id="syncChip" class="sync-chip hidden" title="Sync between devices"></button>
+    <button type="button" id="helpBtn" class="sync-chip help-btn" title="How to use the app" aria-label="Guide: how to use the app"><b>?</b><span class="help-word">Guide</span></button>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -270,12 +294,14 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 
   <!-- DASHBOARD -->
   <section id="tab-dashboard" role="tabpanel">
+    <div class="tab-help"><button type="button" class="linkbtn" data-help="h-dashboard">? What do these numbers mean?</button></div>
     <div class="card reminders" id="reminders"></div>
     <div id="backupNudge" class="nudge hidden"></div>
     <div id="dashEmpty" class="card empty hidden">
       <p><strong>No trades yet.</strong></p>
       <p class="muted small">Your numbers and charts will show here once you log trades.</p>
       <button class="btn primary" type="button" data-goto="form">Log your first trade</button>
+      <button class="btn" type="button" data-help="h-start" style="margin-left:6px">Read the quick guide</button>
     </div>
     <div class="row hidden" id="dashInstrumentRow" style="margin:10px 0 0">
       <label for="dash-instrument" class="small" style="font-weight:600">Show numbers for</label>
@@ -313,6 +339,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 
   <!-- TRADE LOG -->
   <section id="tab-log" role="tabpanel" class="hidden">
+    <div class="tab-help"><button type="button" class="linkbtn" data-help="h-tradelog">? How to use the trade log</button></div>
     <div class="card">
       <div class="filters">
         <div><label for="flt-outcome">Outcome</label>
@@ -336,6 +363,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 
   <!-- LOG TRADE FORM -->
   <section id="tab-form" role="tabpanel" class="hidden">
+    <div class="tab-help"><button type="button" class="linkbtn" data-help="h-log">? How to fill this in</button></div>
     <form id="tradeForm" novalidate autocomplete="off">
       <div class="card">
         <div id="editNote" class="edit-note hidden"></div>
@@ -397,6 +425,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 
   <!-- SETTINGS -->
   <section id="tab-settings" role="tabpanel" class="hidden">
+    <div class="tab-help"><button type="button" class="linkbtn" data-help="h-settings">? What each setting does</button></div>
     <div class="card">
       <h2>Appearance</h2>
       <div class="seg" id="themeSeg"><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button><button type="button" data-v="auto">Auto</button></div>
@@ -497,6 +526,197 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
   </section>
 </div>
 
+<div id="help" class="hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="help-bar">
+    <strong id="helpTitle">Guide</strong>
+    <span class="spacer"></span>
+    <button type="button" class="btn small" id="helpExpand">Open all</button>
+    <button type="button" class="btn small primary" id="helpClose">✕ Close</button>
+  </div>
+  <div class="help-body">
+    <p class="muted small" style="margin-top:0">Tap a heading to open it. Everything here is about this app. Press Escape or ✕ Close to return to where you were.</p>
+
+    <details id="h-start">
+      <summary>1. Quick start: the 60-second routine after every trade</summary>
+      <ol>
+        <li>Tap <b>Log trade</b>.</li>
+        <li>Fill in <b>Outcome</b>, <b>Entry</b>, <b>Stop loss</b>, <b>Take profit</b> and, if the trade is closed, <b>Exit</b> and <b>P&amp;L</b> (copy it from MT5).</li>
+        <li>Tap <b>Confirm</b> on each checklist step you really saw. Add a chart screenshot to the steps that matter.</li>
+        <li>Answer <b>Followed my plan?</b> honestly, tap any <b>Mistakes</b>, pick the <b>Emotion</b>, and write one line in <b>Notes</b>.</li>
+        <li>Tap <b>Save trade</b>. It appears in the Trade log, and the Dashboard updates.</li>
+      </ol>
+      <p class="why"><b>Why straight after the trade:</b> you still remember why you entered and how you felt. A week later the details are gone, and the journal stops teaching you anything.</p>
+    </details>
+
+    <details id="h-log">
+      <summary>2. Logging a trade: every field explained</summary>
+      <table class="help-table">
+        <tr><th>Field</th><th>What to put</th></tr>
+        <tr><td>Date / Time</td><td>When you entered. Date starts as today. Time is optional, but it lets the app guess the session.</td></tr>
+        <tr><td>Instrument</td><td>Starts as your main instrument (Settings). Type another for this trade if needed; suggestions pop up.</td></tr>
+        <tr><td>Session</td><td>London 07:00–11:00, New York 13:00–17:00, Asia 00:00–04:00 GMT, or Other. Picked from the time automatically until you choose one yourself.</td></tr>
+        <tr><td>Direction</td><td>Long (buy) or Short (sell).</td></tr>
+        <tr><td>Outcome *</td><td>Win, Loss, Breakeven, or <b>Open</b> if the trade is still running.</td></tr>
+        <tr><td>Entry price *</td><td>Exactly as MT5 shows it. Decimals are kept (2385.40, 1.08523).</td></tr>
+        <tr><td>Exit / SL / TP</td><td>Leave Exit blank while the trade is open.</td></tr>
+        <tr><td>Lot size</td><td>Optional, for your own records.</td></tr>
+        <tr><td>Risk</td><td>Money you would lose if the stop is hit. When filled, the app shows your result in <b>R</b> (e.g. +2.0R = you made twice what you risked).</td></tr>
+        <tr><td>P&amp;L</td><td>Copy from MT5. For a loss tap <b>±</b> to make it negative (iPhone keypads have no minus key). The app never calculates money itself, because pip values differ by broker and instrument.</td></tr>
+        <tr><td>R:R ratio</td><td>Leave blank and it is worked out from Entry, SL and TP (shown under the box). Type a number only to override it.</td></tr>
+        <tr><td>Setup grade</td><td>A+ (everything lined up) to C (weak). Later you can see whether A+ setups really pay better.</td></tr>
+        <tr><td>Followed my plan? *</td><td>Required unless the trade is Open. The most important question in the journal: see "Process vs result" in part 4.</td></tr>
+        <tr><td>Mistakes</td><td>Tap all that apply. Edit the list in Settings.</td></tr>
+        <tr><td>Emotion / Notes</td><td>How you felt before entering, and anything you noticed on the chart.</td></tr>
+      </table>
+      <h4>Checklist and screenshots</h4>
+      <ul>
+        <li>Each step has a <b>Confirm</b> button. Only confirm what you actually saw before entering.</li>
+        <li><b>+ Add screenshots</b> under a step adds chart pictures to that step. You can pick several at once. Pictures are shrunk automatically to save space.</li>
+        <li><b>Laptop shortcut:</b> take a screenshot (Windows: <b>Win+Shift+S</b>), click the step, then press <b>Ctrl+V</b>. It is pasted into the highlighted step. You can also drag image files onto the box.</li>
+        <li><b>General screenshots</b> is for anything not tied to a step, such as the MT5 result.</li>
+        <li>Tap a thumbnail to see it full screen. The small <b>×</b> removes it.</li>
+      </ul>
+      <h4>Saving</h4>
+      <p>Missing or wrong fields turn red with a message, and nothing you typed is lost. If saving ever fails (for example the phone is full), the form stays as it was and tells you what to do.</p>
+      <p><b>Clear form</b> empties everything (it asks first). Switching tabs does not lose what you typed.</p>
+    </details>
+
+    <details id="h-open">
+      <summary>3. Open trades: closing them later</summary>
+      <ol>
+        <li>Log the trade with Outcome <b>Open</b> when you enter. Exit and P&amp;L can stay empty.</li>
+        <li>When it closes: <b>Trade log</b> → find it (filter Outcome: Open) → <b>Edit</b>.</li>
+        <li>Fill <b>Exit</b>, <b>P&amp;L</b>, change <b>Outcome</b>, answer <b>Followed my plan?</b>, then <b>Save trade</b>.</li>
+      </ol>
+      <p class="why"><b>Why open trades are left out of the stats:</b> their result isn't known yet, so counting them would make win rate and P&amp;L wrong. They still count towards your daily and weekly trade limits.</p>
+    </details>
+
+    <details id="h-tradelog">
+      <summary>4. Trade log: finding, editing, copying, deleting</summary>
+      <ul>
+        <li>Newest trades are at the top. Each card shows prices, R:R, result, checklist (e.g. 3/4), plan, mistakes, notes and screenshots grouped by step.</li>
+        <li><b>Filters</b>: Outcome, Session, Followed plan, Instrument and Date range. They combine: e.g. Loss + Followed plan No + This month shows this month's avoidable losses. <b>Clear filters</b> resets them.</li>
+        <li><b>Edit</b> opens the trade in the form, with its screenshots and ticks. It keeps its own checklist steps even if you changed your checklist since.</li>
+        <li><b>Duplicate</b> starts a new trade with the same setup (instrument, direction, prices, risk, grade) and today's date, but no result and no screenshots. Handy for re-entries.</li>
+        <li><b>Delete</b> asks first. With sync on, the trade is removed from your other device too.</li>
+      </ul>
+    </details>
+
+    <details id="h-dashboard">
+      <summary>5. Dashboard: what every number means</summary>
+      <p><b>Closed trades</b> means Win, Loss and Breakeven. Open trades are left out of every result below.</p>
+      <table class="help-table">
+        <tr><th>Number</th><th>How it is worked out</th></tr>
+        <tr><td>Total trades</td><td>Every trade, including open ones.</td></tr>
+        <tr><td>Win rate</td><td>Wins ÷ (Wins + Losses). Breakevens are left out, so they don't drag the rate down.</td></tr>
+        <tr><td>Net P&amp;L</td><td>The P&amp;L of all closed trades added up.</td></tr>
+        <tr><td>Profit factor</td><td>Total won ÷ total lost. Above 1.0 means you make more than you lose. Shows "—" until you have a loss.</td></tr>
+        <tr><td>Plan followed</td><td>Share of closed trades where you answered Yes.</td></tr>
+        <tr><td>Full-checklist win rate</td><td>Win rate counting only trades where every step was confirmed. Compare it with your normal win rate: if it is clearly higher, your checklist works, so wait for it.</td></tr>
+        <tr><td>Balance / Return</td><td>Only if a starting balance is set in Settings: starting balance + net P&amp;L.</td></tr>
+        <tr><td>Average win / loss</td><td>Average P&amp;L of your winners and of your losers.</td></tr>
+        <tr><td>Average R:R (planned)</td><td>The reward you aimed for compared with your risk, averaged over trades that have one.</td></tr>
+        <tr><td>Average result in R</td><td>What you actually got, in units of risk (only trades with Risk filled). A positive number means you have an edge.</td></tr>
+        <tr><td>Most common mistake</td><td>The mistake you tick most often: your first thing to fix.</td></tr>
+      </table>
+      <h4>Process vs result: the four boxes</h4>
+      <ul>
+        <li><b>Followed plan + Win:</b> a good trade. Repeat it.</li>
+        <li><b>Followed plan + Loss:</b> a good loss. Losses are part of any strategy; accept it.</li>
+        <li><b>Broke plan + Win:</b> lucky and dangerous. It rewards bad habits.</li>
+        <li><b>Broke plan + Loss:</b> a lesson. Check the Mistakes you ticked.</li>
+      </ul>
+      <p class="why"><b>Why this matters most:</b> one trade's result is partly luck, but following the plan is fully in your control. If the "followed plan" boxes grow, results follow over time.</p>
+      <h4>Charts and the rest</h4>
+      <ul>
+        <li><b>Equity curve</b>: running total of P&amp;L (or balance, if set) after each closed trade. Hover or tap a point to see that trade.</li>
+        <li><b>Wins vs losses by session</b>: shows which session works for you and which to avoid.</li>
+        <li><b>Recent form</b>: your last 20 trades as dots, oldest on the left. Green win, red loss, grey breakeven, outlined open.</li>
+        <li><b>Show numbers for</b> (appears once you trade 2+ instruments): pick one instrument to see only its numbers and charts.</li>
+        <li><b>Reminders</b> at the top: your own rules (edit in Settings). The coloured line counts trades today/this week and the money left before your daily loss limit. It turns red when you hit a limit: that's the signal to stop.</li>
+      </ul>
+    </details>
+
+    <details id="h-settings">
+      <summary>6. Settings: making the journal yours</summary>
+      <ul>
+        <li><b>Appearance</b>: Light, Dark or Auto (follows the phone or laptop setting).</li>
+        <li><b>Checklist steps</b>: load preset A (ICC) or B, or write your own 1 to 8 steps, reorder with ↑ ↓, then <b>Save checklist</b>. Old trades keep the steps they were logged with, so your history stays honest when your strategy changes.</li>
+        <li><b>Main instrument</b> and <b>Account currency symbol</b>: what you trade most, and the money symbol used everywhere.</li>
+        <li><b>Max trades per day/week</b> and <b>Daily loss limit</b>: leave blank to hide. They feed the line under the reminders.</li>
+        <li><b>Starting balance</b>: turns on Balance and Return, and the equity curve shows your balance.</li>
+        <li><b>Reminders</b> and <b>Mistake options</b>: one per line. Click <b>Save</b>.</li>
+      </ul>
+    </details>
+
+    <details id="h-sync">
+      <summary>7. Sync: keeping laptop and phone the same</summary>
+      <p>The chip at the top right shows the state:</p>
+      <table class="help-table">
+        <tr><th>Chip</th><th>Meaning</th></tr>
+        <tr><td>Synced 2 min ago (green)</td><td>All good.</td></tr>
+        <tr><td>Syncing…</td><td>Working. Wait a moment.</td></tr>
+        <tr><td>Offline (grey)</td><td>No internet. Keep logging; it catches up by itself.</td></tr>
+        <tr><td>Sync problem (red)</td><td>Tap it. The message in Settings says what's wrong, usually an expired token: make a new one and paste it again.</td></tr>
+        <tr><td>Sync off (dashed)</td><td>Not set up on this device. Tap it to set up.</td></tr>
+      </table>
+      <ul>
+        <li>Sync runs when the app opens, a few seconds after every change, every 5 minutes, and when the internet returns. <b>Sync now</b> in Settings forces it.</li>
+        <li>If the same trade is changed on both devices before they sync, the later change wins. The other version is kept in the GitHub repository's <code>conflicts</code> folder.</li>
+        <li>Your checklist and settings sync too. Light/Dark mode stays per device.</li>
+        <li>Every device needs its own token (see README, part 6).</li>
+      </ul>
+    </details>
+
+    <details id="h-backup">
+      <summary>8. Backups and Excel</summary>
+      <ul>
+        <li><b>Export full backup (.json)</b>: everything, including screenshots. Keep a copy in Google Drive or email it to yourself now and then. It's your safety net if GitHub or a device ever fails.</li>
+        <li><b>Export trades to Excel (.csv)</b>: one row per trade for your own analysis in Excel or Google Sheets. It has no screenshots and can't be imported back.</li>
+        <li><b>Import backup (.json)</b>: shows a summary first. <b>Merge</b> adds new trades and keeps the newest copy of each. Importing the same file twice never creates duplicates. <b>Replace all</b> wipes this device and uses only the backup (it asks twice).</li>
+        <li>The dashboard reminds you when a backup is overdue. A recent sync counts as a backup.</li>
+      </ul>
+    </details>
+
+    <details id="h-phone">
+      <summary>9. Phone tips</summary>
+      <ul>
+        <li>Install it: Android Chrome <b>⋮ → Add to Home screen</b>; iPhone Safari <b>Share → Add to Home Screen</b>. It then opens like an app and works offline.</li>
+        <li>On iPhone, installing also protects your data: Safari can clear data for websites you haven't opened in a while.</li>
+        <li>Use <b>±</b> next to P&amp;L to enter a loss.</li>
+        <li>To get a new version of the app: close it fully and open it again. Settings → About shows the version.</li>
+      </ul>
+    </details>
+
+    <details id="h-review">
+      <summary>10. Weekly review: 10 minutes every weekend</summary>
+      <ol>
+        <li><b>Trade log</b> → Date range <b>This week</b>. Read each card and its notes.</li>
+        <li>Dashboard: look at <b>Process vs result</b>. Count the "broke plan" trades and what they cost.</li>
+        <li>Check <b>Most common mistake</b>. Pick one thing to fix next week and add it to your Reminders.</li>
+        <li>Compare <b>Full-checklist win rate</b> with your normal <b>Win rate</b>. If full-checklist trades do better, be stricter about waiting for every step.</li>
+        <li>Look at <b>Wins vs losses by session</b>. Consider skipping the session that keeps losing.</li>
+        <li>Export a backup.</li>
+      </ol>
+      <p class="why"><b>Why weekly:</b> single trades are noise. Patterns only show over several trades, and a week is long enough to see one and short enough to fix it quickly.</p>
+    </details>
+
+    <details id="h-faq">
+      <summary>11. Common problems</summary>
+      <table class="help-table">
+        <tr><th>Problem</th><th>Fix</th></tr>
+        <tr><td>"Please check the highlighted fields"</td><td>Scroll to the red messages: usually Outcome, Entry price, or Followed my plan.</td></tr>
+        <tr><td>"Enter a number only"</td><td>Remove letters or symbols from a price box. A comma for decimals is fine.</td></tr>
+        <tr><td>Win rate or R:R shows "—"</td><td>Not enough data yet: it needs at least one closed win or loss, or valid Entry/SL/TP. "—" means "nothing to show", not an error.</td></tr>
+        <tr><td>No R:R calculated</td><td>Prices don't make sense for the direction. For a Long, SL must be below Entry and TP above it; for a Short, the other way round.</td></tr>
+        <tr><td>Trade missing on the other device</td><td>Check the sync chip on both devices (part 7).</td></tr>
+        <tr><td>A change to the app doesn't show</td><td>Refresh (laptop: F5) or close and reopen (phone), then check Settings → About.</td></tr>
+        <tr><td>"Storage full"</td><td>Export a backup, then delete old screenshots or trades you no longer need.</td></tr>
+      </table>
+    </details>
+  </div>
+</div>
+
 <div id="lightbox" class="hidden" role="dialog" aria-modal="true" aria-label="Screenshot">
   <div class="cap" id="lbCap"></div>
   <button type="button" class="close" id="lbClose" aria-label="Close">✕ Close</button>
@@ -509,7 +729,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.6';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -1248,6 +1468,19 @@ function renderDashboard() {
   recent.forEach(t => dots.append(el('span', { class: 'dot ' + t.outcome, title: `${fmtDate(t.date)} · ${t.outcome}${CLOSED.has(t.outcome) ? ' · ' + money(t.pnl || 0) : ''}`, role: 'img', 'aria-label': t.outcome })));
 
   renderCharts();
+}
+let helpReturnFocus = null;
+function openHelp(sectionId) {
+  helpReturnFocus = document.activeElement;
+  $('help').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+  const sec = sectionId && $(sectionId);
+  if (sec) { sec.open = true; requestAnimationFrame(() => sec.scrollIntoView({ block: 'start' })); }
+  else $('help').scrollTop = 0;
+  $('helpClose').focus({ preventScroll: true });
+}
+function closeHelp() {
+  $('help').classList.add('hidden'); document.body.style.overflow = '';
+  if (helpReturnFocus && helpReturnFocus.focus) helpReturnFocus.focus();
 }
 function openSyncSettings() { showTab('settings'); $('syncCard').scrollIntoView({ block: 'start' }); }
 function addDays(s, n) { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d + n)); }
@@ -2084,7 +2317,19 @@ function wire() {
   // Lightbox
   $('lbClose').addEventListener('click', closeLightbox);
   $('lightbox').addEventListener('click', e => { if (e.target === $('lightbox')) closeLightbox(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('lightbox').classList.contains('hidden')) closeLightbox(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (!$('lightbox').classList.contains('hidden')) closeLightbox();
+    else if (!$('help').classList.contains('hidden')) closeHelp();
+  });
+  // Guide
+  $('helpBtn').addEventListener('click', () => openHelp());
+  $('helpClose').addEventListener('click', closeHelp);
+  $('helpExpand').addEventListener('click', () => {
+    const all = [...document.querySelectorAll('#help details')], open = !all.every(d => d.open);
+    all.forEach(d => { d.open = open; }); $('helpExpand').textContent = open ? 'Close all' : 'Open all';
+  });
+  document.querySelectorAll('[data-help]').forEach(b => b.addEventListener('click', () => openHelp(b.dataset.help)));
   // Redraw charts on resize / theme change (each draw replaces the old chart).
   let raf = 0; const redraw = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(renderCharts); };
   window.addEventListener('resize', redraw);
