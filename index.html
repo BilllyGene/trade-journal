@@ -183,7 +183,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 .empty p { margin: 0 0 12px; }
 
 /* Trade log */
-.filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.filters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .filters label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
 .trade-head { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--grey-bg); color: var(--grey); }
@@ -277,6 +277,10 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       <p class="muted small">Your numbers and charts will show here once you log trades.</p>
       <button class="btn primary" type="button" data-goto="form">Log your first trade</button>
     </div>
+    <div class="row hidden" id="dashInstrumentRow" style="margin:10px 0 0">
+      <label for="dash-instrument" class="small" style="font-weight:600">Show numbers for</label>
+      <select id="dash-instrument" style="width:auto;min-width:150px"><option value="">All instruments</option></select>
+    </div>
     <div class="metrics" id="metrics"></div>
     <div class="card">
       <h2>Process vs result</h2>
@@ -317,6 +321,8 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
           <select id="flt-session"><option value="">All</option><option>London</option><option>New York</option><option>Asia</option><option>Other</option></select></div>
         <div><label for="flt-plan">Followed plan</label>
           <select id="flt-plan"><option value="">All</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+        <div><label for="flt-instrument">Instrument</label>
+          <select id="flt-instrument"><option value="">All</option></select></div>
         <div><label for="flt-range">Date range</label>
           <select id="flt-range"><option value="">All</option><option value="week">This week</option><option value="month">This month</option></select></div>
       </div>
@@ -337,7 +343,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <div class="grid2">
           <div class="field" data-f="date"><label class="lbl" for="f-date">Date <span class="req">*</span></label><input type="date" id="f-date"><div class="err"></div></div>
           <div class="field" data-f="time"><label class="lbl" for="f-time">Time</label><input type="time" id="f-time"><div class="err"></div></div>
-          <div class="field" data-f="instrument"><label class="lbl" for="f-instrument">Instrument</label><input type="text" id="f-instrument" value="XAUUSD" autocapitalize="characters"><div class="err"></div></div>
+          <div class="field" data-f="instrument"><label class="lbl" for="f-instrument">Instrument</label><input type="text" id="f-instrument" value="XAUUSD" autocapitalize="characters" list="instrumentList"><datalist id="instrumentList"></datalist><div class="err"></div></div>
           <div class="field" data-f="session"><label class="lbl" for="f-session">Session</label>
             <select id="f-session">
               <option value="London">London (07:00–11:00 GMT)</option>
@@ -349,13 +355,13 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
             <select id="f-direction"><option value="Long">Long (Buy)</option><option value="Short">Short (Sell)</option></select><div class="err"></div></div>
           <div class="field" data-f="outcome"><label class="lbl" for="f-outcome">Outcome <span class="req">*</span></label>
             <select id="f-outcome"><option value="">Choose…</option><option>Win</option><option>Loss</option><option>Breakeven</option><option>Open</option></select><div class="err"></div></div>
-          <div class="field" data-f="entry"><label class="lbl" for="f-entry">Entry price <span class="req">*</span></label><input type="text" inputmode="decimal" id="f-entry" placeholder="e.g. 2385.40"><div class="err"></div></div>
+          <div class="field" data-f="entry"><label class="lbl" for="f-entry">Entry price <span class="req">*</span></label><input type="text" inputmode="decimal" id="f-entry" placeholder="price as shown on MT5"><div class="err"></div></div>
           <div class="field" data-f="exit"><label class="lbl" for="f-exit">Exit price</label><input type="text" inputmode="decimal" id="f-exit" placeholder="blank while open"><div class="err"></div></div>
           <div class="field" data-f="sl"><label class="lbl" for="f-sl">Stop loss</label><input type="text" inputmode="decimal" id="f-sl"><div class="err"></div></div>
           <div class="field" data-f="tp"><label class="lbl" for="f-tp">Take profit</label><input type="text" inputmode="decimal" id="f-tp"><div class="err"></div></div>
           <div class="field" data-f="lot"><label class="lbl" for="f-lot">Lot size</label><input type="text" inputmode="decimal" id="f-lot"><div class="err"></div></div>
-          <div class="field" data-f="risk"><label class="lbl" for="f-risk">Risk ($)</label><input type="text" inputmode="decimal" id="f-risk" placeholder="money at risk"><div class="err"></div></div>
-          <div class="field" data-f="pnl"><label class="lbl" for="f-pnl">P&amp;L ($)</label>
+          <div class="field" data-f="risk"><label class="lbl" for="f-risk">Risk (<span class="cur">$</span>)</label><input type="text" inputmode="decimal" id="f-risk" placeholder="money at risk"><div class="err"></div></div>
+          <div class="field" data-f="pnl"><label class="lbl" for="f-pnl">P&amp;L (<span class="cur">$</span>)</label>
             <div class="inline-input"><input type="text" inputmode="decimal" id="f-pnl" placeholder="e.g. 125.50"><button type="button" class="icon-btn" id="pnlSign" title="Switch plus / minus" aria-label="Switch plus or minus">±</button></div>
             <div class="hint" id="pnlHint"></div><div class="err"></div></div>
           <div class="field" data-f="rr"><label class="lbl" for="f-rr">R:R ratio</label><input type="text" inputmode="decimal" id="f-rr" placeholder="auto from prices"><div class="hint" id="rrHint"></div><div class="err"></div></div>
@@ -419,9 +425,10 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       <div class="grid2">
         <div class="field"><label class="lbl" for="s-maxDay">Max trades per day</label><input type="text" inputmode="numeric" id="s-maxDay" placeholder="blank = hide"></div>
         <div class="field"><label class="lbl" for="s-maxWeek">Max trades per week</label><input type="text" inputmode="numeric" id="s-maxWeek" placeholder="blank = hide"></div>
-        <div class="field"><label class="lbl" for="s-lossLimit">Daily loss limit ($)</label><input type="text" inputmode="decimal" id="s-lossLimit" placeholder="blank = hide"></div>
-        <div class="field full"><label class="lbl" for="s-instrument">Main instrument</label><input type="text" id="s-instrument" autocapitalize="characters" placeholder="e.g. XAUUSD, EURUSD, US30"><div class="hint">Filled in for every new trade and shown at the top. You can still type a different one on any trade.</div></div>
-        <div class="field"><label class="lbl" for="s-startBal">Starting balance ($)</label><input type="text" inputmode="decimal" id="s-startBal" placeholder="optional"></div>
+        <div class="field"><label class="lbl" for="s-lossLimit">Daily loss limit (<span class="cur">$</span>)</label><input type="text" inputmode="decimal" id="s-lossLimit" placeholder="blank = hide"></div>
+        <div class="field"><label class="lbl" for="s-instrument">Main instrument</label><input type="text" id="s-instrument" autocapitalize="characters" placeholder="e.g. XAUUSD, EURUSD, US30" list="instrumentList"><div class="hint">Filled in for every new trade and shown at the top. Any trade can use a different one.</div></div>
+        <div class="field"><label class="lbl" for="s-currency">Account currency symbol</label><input type="text" id="s-currency" maxlength="4" placeholder="$"><div class="hint">The currency of your trading account, e.g. $, €, £, GH₵. Used for P&amp;L, risk and balance.</div></div>
+        <div class="field"><label class="lbl" for="s-startBal">Starting balance (<span class="cur">$</span>)</label><input type="text" inputmode="decimal" id="s-startBal" placeholder="optional"></div>
         <div class="field full"><label class="lbl" for="s-reminders">Dashboard reminders (one per line)</label><textarea id="s-reminders" rows="4"></textarea></div>
         <div class="field full"><label class="lbl" for="s-mistakes">Mistake options (one per line)</label><textarea id="s-mistakes" rows="6"></textarea></div>
       </div>
@@ -502,7 +509,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -529,7 +536,7 @@ const DEFAULT_REMINDERS = ['Keep risk the same on every trade.', 'Probability ov
 function defaultSettings() {
   return {
     key: 'settings', checklist: clone(PRESET_A), mistakes: DEFAULT_MISTAKES.slice(), reminders: DEFAULT_REMINDERS.slice(),
-    maxTradesDay: null, maxTradesWeek: null, dailyLossLimit: null, startingBalance: null, instrument: 'XAUUSD', theme: 'auto', updatedAt: null
+    maxTradesDay: null, maxTradesWeek: null, dailyLossLimit: null, startingBalance: null, instrument: 'XAUUSD', currency: '$', theme: 'auto', updatedAt: null
   };
 }
 
@@ -584,9 +591,10 @@ const MINUS = '−';
 function money(n, signed = true) {
   if (n == null || !isFinite(n)) return '—';
   const abs = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  if (Math.abs(n) < 0.005) return '$0.00';
-  if (n < 0) return `${MINUS}$${abs}`;
-  return signed ? `+$${abs}` : `$${abs}`;
+  const c = settings.currency || '$';
+  if (Math.abs(n) < 0.005) return `${c}0.00`;
+  if (n < 0) return `${MINUS}${c}${abs}`;
+  return signed ? `+${c}${abs}` : `${c}${abs}`;
 }
 // Prices keep the decimals typed (gold 2385.40, EURUSD 1.08523): at least 2, at most 5.
 function price(n) {
@@ -776,6 +784,7 @@ function normalizeSettings(s) {
   ['maxTradesDay', 'maxTradesWeek', 'dailyLossLimit', 'startingBalance'].forEach(k => { out[k] = numOrNull(out[k]); });
   if (!['light', 'dark', 'auto'].includes(out.theme)) out.theme = 'auto';
   out.instrument = String(out.instrument || '').trim().toUpperCase() || 'XAUUSD';
+  out.currency = String(out.currency || '').trim().slice(0, 4) || '$';
   return out;
 }
 function shotIdsOf(t) { return t.stepScreenshots.flat().concat(t.generalScreenshots); }
@@ -790,6 +799,21 @@ const urlCache = new Map();  // shot id -> object URL
 const pendingBlobs = new Map(); // shot id -> Blob (not yet saved)
 
 function liveTrades() { return trades.filter(t => !t.deleted); }
+function instrumentsInUse() { return [...new Set(liveTrades().map(t => t.instrument))].sort(); }
+const COMMON_INSTRUMENTS = ['XAUUSD', 'XAGUSD', 'EURUSD', 'GBPUSD', 'USDJPY', 'GBPJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'NZDUSD', 'US30', 'NAS100', 'SPX500', 'GER40', 'BTCUSD', 'ETHUSD', 'USOIL'];
+// Trades shown on the dashboard: all, or one instrument.
+function dashTrades() { const i = $('dash-instrument').value; return liveTrades().filter(t => !i || t.instrument === i); }
+// Keep the instrument pickers in line with the trades that exist.
+function renderInstrumentChoices() {
+  const used = instrumentsInUse();
+  for (const [id, allLabel] of [['dash-instrument', 'All instruments'], ['flt-instrument', 'All']]) {
+    const sel = $(id), cur = sel.value;
+    sel.replaceChildren(el('option', { value: '' }, allLabel), ...used.map(i => el('option', { value: i }, i)));
+    sel.value = used.includes(cur) ? cur : '';
+  }
+  $('dashInstrumentRow').classList.toggle('hidden', used.length < 2);
+  $('instrumentList').replaceChildren(...[...new Set([settings.instrument, ...used, ...COMMON_INSTRUMENTS])].map(i => el('option', { value: i })));
+}
 
 async function loadAll() {
   const [tr, s, dv] = await Promise.all([store.list('trades'), store.get('meta', 'settings'), store.get('meta', 'device')]);
@@ -1068,7 +1092,7 @@ function readForm() {
   const nums = { entry: 'Entry price', exit: 'Exit price', sl: 'Stop loss', tp: 'Take profit', lot: 'Lot size', risk: 'Risk', pnl: 'P&L', rr: 'R:R' };
   for (const [k, label] of Object.entries(nums)) {
     const n = parseNum(F(k).value);
-    if (Number.isNaN(n)) errors.push([k, `${label}: please enter a number only (e.g. 2385.40).`]);
+    if (Number.isNaN(n)) errors.push([k, `${label}: please enter a number only (e.g. 2385.40 or 1.08523).`]);
     v[k] = Number.isNaN(n) ? null : n;
   }
   if (v.entry == null && !errors.some(e => e[0] === 'entry')) errors.push(['entry', 'Entry price is required.']);
@@ -1142,8 +1166,10 @@ async function onSave(e) {
    ========================================================================= */
 function metric(k, v, s, cls) { return el('div', { class: 'metric' }, el('div', { class: 'k' }, k), el('div', { class: 'v ' + (cls || '') }, v), s ? el('div', { class: 's' }, s) : null); }
 function renderDashboard() {
-  const live = liveTrades();
-  const st = computeStats(trades);
+  renderInstrumentChoices();
+  const live = liveTrades();          // limits and reminders count every instrument
+  const shown = dashTrades();         // numbers and charts follow the instrument picker
+  const st = computeStats(shown);
   // Reminders + live line
   const r = $('reminders'); r.replaceChildren();
   const rem = settings.reminders.filter(x => x.trim());
@@ -1192,7 +1218,7 @@ function renderDashboard() {
     metric('Plan followed', pct(st.planRate), 'of closed trades'),
     metric('Full-checklist win rate', pct(st.fullWinRate), `${st.fullCount} trade${st.fullCount === 1 ? '' : 's'} with every step`)
   );
-  if (settings.startingBalance != null) {
+  if (settings.startingBalance != null && !$('dash-instrument').value) {
     const bal = settings.startingBalance + st.net;
     m.append(metric('Balance', money(bal, false), `started ${money(settings.startingBalance, false)}`),
       metric('Return', settings.startingBalance > 0 ? `${st.net >= 0 ? '+' : MINUS}${Math.abs(st.net / settings.startingBalance * 100).toFixed(1)}%` : '—', 'on starting balance', signClass(st.net)));
@@ -1216,7 +1242,7 @@ function renderDashboard() {
   );
 
   // Recent form
-  const recent = live.slice().sort(chronoCmp).slice(-20);
+  const recent = shown.slice().sort(chronoCmp).slice(-20);
   const dots = $('recentDots'); dots.replaceChildren();
   if (!recent.length) dots.append(el('span', { class: 'muted small' }, 'No trades yet.'));
   recent.forEach(t => dots.append(el('span', { class: 'dot ' + t.outcome, title: `${fmtDate(t.date)} · ${t.outcome}${CLOSED.has(t.outcome) ? ' · ' + money(t.pnl || 0) : ''}`, role: 'img', 'aria-label': t.outcome })));
@@ -1238,7 +1264,8 @@ function niceTicks(min, max, count = 4) {
 }
 function shortMoney(n, signed) {
   const a = Math.abs(n); const s = a >= 100000 ? (a / 1000).toFixed(0) + 'k' : a.toLocaleString('en-US', { maximumFractionDigits: a < 10 ? 2 : 0 });
-  return n < 0 ? `${MINUS}$${s}` : (signed && n > 0 ? `+$${s}` : `$${s}`);
+  const c = settings.currency || '$';
+  return n < 0 ? `${MINUS}${c}${s}` : (signed && n > 0 ? `+${c}${s}` : `${c}${s}`);
 }
 
 function renderCharts() {
@@ -1247,9 +1274,9 @@ function renderCharts() {
 }
 function drawEquity() {
   const box = $('equityChart'); box.replaceChildren();
-  const useBal = settings.startingBalance != null;
+  const useBal = settings.startingBalance != null && !$('dash-instrument').value;
   $('equityTitle').textContent = useBal ? 'Equity curve (balance)' : 'Equity curve (cumulative P&L)';
-  const closed = liveTrades().filter(t => CLOSED.has(t.outcome)).sort(chronoCmp);
+  const closed = dashTrades().filter(t => CLOSED.has(t.outcome)).sort(chronoCmp);
   if (!closed.length) { box.append(el('p', { class: 'muted small', style: 'margin:0' }, 'The curve appears after your first closed trade.')); return; }
   const base = useBal ? settings.startingBalance : 0;
   const pts = [{ v: base, label: 'Start', t: null }];
@@ -1307,7 +1334,7 @@ function drawEquity() {
 }
 function drawSessions() {
   const box = $('sessionChart'); box.replaceChildren();
-  const closed = liveTrades().filter(t => t.outcome === 'Win' || t.outcome === 'Loss');
+  const closed = dashTrades().filter(t => t.outcome === 'Win' || t.outcome === 'Loss');
   if (!closed.length) { box.append(el('p', { class: 'muted small', style: 'margin:0' }, 'Shows after your first win or loss.')); return; }
   const data = SESSIONS.map(sn => ({ s: sn, w: closed.filter(t => t.session === sn && t.outcome === 'Win').length, l: closed.filter(t => t.session === sn && t.outcome === 'Loss').length }));
   const green = cssVar('--green'), red = cssVar('--red'), muted = cssVar('--muted'), text = cssVar('--text'), grid = cssVar('--grid');
@@ -1338,10 +1365,10 @@ function drawSessions() {
    Trade log
    ========================================================================= */
 function filteredTrades() {
-  const o = $('flt-outcome').value, s = $('flt-session').value, p = $('flt-plan').value, r = $('flt-range').value;
+  const o = $('flt-outcome').value, s = $('flt-session').value, p = $('flt-plan').value, r = $('flt-range').value, ins = $('flt-instrument').value;
   const ws = weekStartStr(), we = addDays(ws, 6), ms = monthStartStr(), me = addDays(ymd(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)), -1);
   return liveTrades().filter(t =>
-    (!o || t.outcome === o) && (!s || t.session === s) &&
+    (!o || t.outcome === o) && (!s || t.session === s) && (!ins || t.instrument === ins) &&
     (!p || (p === 'yes' ? t.followedPlan === true : t.followedPlan === false)) &&
     (!r || (r === 'week' ? t.date >= ws && t.date <= we : t.date >= ms && t.date <= me))
   ).sort((a, b) => chronoCmp(b, a));
@@ -1349,7 +1376,7 @@ function filteredTrades() {
 function renderLog() {
   const list = $('tradeList'); list.replaceChildren();
   const all = liveTrades(), shown = filteredTrades();
-  const anyFilter = ['flt-outcome', 'flt-session', 'flt-plan', 'flt-range'].some(id => $(id).value);
+  const anyFilter = ['flt-outcome', 'flt-session', 'flt-plan', 'flt-instrument', 'flt-range'].some(id => $(id).value);
   $('clearFilters').disabled = !anyFilter;
   $('logCount').textContent = all.length ? `Showing ${shown.length} of ${all.length} trade${all.length === 1 ? '' : 's'}` : '';
   if (!all.length) {
@@ -1400,7 +1427,7 @@ function tradeCard(t) {
     el('button', { type: 'button', class: 'btn small danger', onclick: () => deleteTrade(t.id) }, 'Delete')));
   return card;
 }
-function clearFilters() { ['flt-outcome', 'flt-session', 'flt-plan', 'flt-range'].forEach(id => { $(id).value = ''; }); renderLog(); }
+function clearFilters() { ['flt-outcome', 'flt-session', 'flt-plan', 'flt-instrument', 'flt-range'].forEach(id => { $(id).value = ''; }); renderLog(); }
 function confirmLeaveDraft() { return !draft.dirty || confirm('You have unsaved changes in the Log trade form. Discard them?'); }
 function editTrade(id) {
   const t = trades.find(x => x.id === id); if (!t) return;
@@ -1474,7 +1501,8 @@ async function applyChecklist(list, what) {
 }
 function renderLimits() {
   $('s-maxDay').value = settings.maxTradesDay ?? ''; $('s-maxWeek').value = settings.maxTradesWeek ?? '';
-  $('s-instrument').value = settings.instrument; $('subtitle').textContent = `${settings.instrument} · Track, review, improve`;
+  $('s-instrument').value = settings.instrument; $('s-currency').value = settings.currency;
+  document.querySelectorAll('.cur').forEach(n => { n.textContent = settings.currency; }); $('subtitle').textContent = `${settings.instrument} · Track, review, improve`;
   $('s-lossLimit').value = settings.dailyLossLimit ?? ''; $('s-startBal').value = settings.startingBalance ?? '';
   $('s-reminders').value = settings.reminders.join('\n'); $('s-mistakes').value = settings.mistakes.join('\n');
 }
@@ -1490,6 +1518,7 @@ async function saveLimits() {
   if (errs.length) return;
   const lines = id => [...new Set($(id).value.split('\n').map(s => s.trim()).filter(Boolean))];
   vals.instrument = $('s-instrument').value.trim().toUpperCase() || 'XAUUSD';
+  vals.currency = $('s-currency').value.trim().slice(0, 4) || '$';
   vals.reminders = lines('s-reminders'); vals.mistakes = lines('s-mistakes');
   try { await saveSettings(vals); } catch (err) { toast('Not saved. ' + storageAdvice(err), true); return; }
   renderLimits(); if (!draft.dirty && !draft.editingId) resetForm(); else renderFormDynamic(); refreshAll(); toast('Settings saved');
@@ -1575,7 +1604,7 @@ function buildCsv(list) {
   const cols = [
     ['Date', t => t.date, true], ['Time', t => t.time, true], ['Instrument', t => t.instrument, true], ['Session', t => t.session, true],
     ['Direction', t => t.direction, true], ['Entry', t => t.entry], ['Exit', t => t.exit], ['Stop loss', t => t.sl], ['Take profit', t => t.tp],
-    ['Lot size', t => t.lot], ['Risk ($)', t => t.risk], ['P&L ($)', t => t.pnl], ['Result (R)', t => { const r = rMultiple(t); return r == null ? null : Math.round(r * 100) / 100; }],
+    ['Lot size', t => t.lot], [`Risk (${settings.currency})`, t => t.risk], [`P&L (${settings.currency})`, t => t.pnl], ['Result (R)', t => { const r = rMultiple(t); return r == null ? null : Math.round(r * 100) / 100; }],
     ['R:R', t => effRR(t)], ['Outcome', t => t.outcome, true], ['Grade', t => t.grade, true],
     ['Followed plan', t => t.followedPlan === true ? 'Yes' : t.followedPlan === false ? 'No' : '', true],
     ['Checklist', t => `${t.checklistConfirmed.filter(Boolean).length}/${t.checklistSnapshot.length} steps`, true],
@@ -2006,8 +2035,9 @@ function wire() {
     e.preventDefault(); addFiles(draft.shotTarget, files);
   });
   // Log filters
-  ['flt-outcome', 'flt-session', 'flt-plan', 'flt-range'].forEach(id => $(id).addEventListener('change', renderLog));
+  ['flt-outcome', 'flt-session', 'flt-plan', 'flt-instrument', 'flt-range'].forEach(id => $(id).addEventListener('change', renderLog));
   $('clearFilters').addEventListener('click', clearFilters);
+  $('dash-instrument').addEventListener('change', renderDashboard);
   // Settings
   $('themeSeg').addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b) return;

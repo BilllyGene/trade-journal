@@ -65,14 +65,14 @@
     <li>Two ways to give your friend the journal (pick one)</li>
     <li>Make your own copy: GitHub account, files, putting it online</li>
     <li>Open it and install it on the phone</li>
-    <li>First settings: instrument, checklist, limits</li>
+    <li>First settings: what you trade, currency, checklist, limits</li>
     <li>Turn on sync between laptop and phone</li>
     <li>Problems and fixes (everything we ran into)</li>
     <li>Changing or updating the app later</li>
     <li>The files: what each one does</li>
     <li>Final checklist</li>
   </ol>
-  <p class="small" style="margin-top:30px">Version of the app described here: <b>v1.4</b>. You can always see the version at the bottom of the app's Settings tab (picture in part 4).</p>
+  <p class="small" style="margin-top:30px">Version of the app described here: <b>v1.5</b>. You can always see the version at the bottom of the app's Settings tab (picture in part 4).</p>
 </div>
 
 <!-- 1 -->
@@ -190,21 +190,39 @@
 
 <!-- 5 -->
 <section>
-  <h2>5. First settings: instrument, checklist, limits</h2>
+  <h2>5. First settings: what you trade, currency, checklist, limits</h2>
   <p>Open the <span class="k">Settings</span> tab. Settings sync to the other device too, once part 6 is done. Light/Dark mode is the exception and stays per device.</p>
-  <h3>5.1 What you trade</h3>
-  <p>In <b>Rules and limits</b>, set <b>Main instrument</b> (e.g. <code>XAUUSD</code>, <code>EURUSD</code>, <code>US30</code>) and click <span class="k">Save</span>. It's filled in on every new trade and shown under the title. You can still type a different instrument on any single trade.</p>
-  <figure class="phone"><img src="img/limits.png"><figcaption>Rules and limits: main instrument, trade limits, loss limit, starting balance, reminders and mistake list.</figcaption></figure>
+  <h3>5.1 What you trade: any pair, index, metal or crypto</h3>
+  <p>The journal is <b>not fixed to gold</b>. Nothing in the app needs editing to trade something else: it's all in Settings.</p>
+  <ol>
+    <li><span class="k">Settings</span> → <b>Rules and limits</b> → <b>Main instrument</b>: type what you trade most, e.g. <code>EURUSD</code>, <code>GBPJPY</code>, <code>US30</code>, <code>NAS100</code>, <code>BTCUSD</code>. A list of common ones pops up as you type.</li>
+    <li><b>Account currency symbol</b>: the currency of the trading account, e.g. <code>$</code>, <code>€</code>, <code>£</code>, <code>GH₵</code>. P&amp;L, risk, loss limit and balance all use it.</li>
+    <li>Click <span class="k">Save</span>. The heading changes (e.g. "EURUSD · Track, review, improve"), and every new trade starts with that instrument.</li>
+  </ol>
+  <figure class="phone"><img src="img/limits.png"><figcaption>Rules and limits: main instrument and account currency at the top.</figcaption></figure>
+  <h3>Trading more than one instrument</h3>
+  <ul>
+    <li>On any trade, just type a different instrument in the <b>Instrument</b> box. The main one is only the starting value.</li>
+    <li>As soon as trades exist for two or more instruments, the <b>Dashboard</b> shows a <b>"Show numbers for"</b> picker. Choose one instrument to see its own win rate, P&amp;L, charts and recent form, or <b>All instruments</b> for the whole account.</li>
+    <li>The <b>Trade log</b> has an <b>Instrument</b> filter, which you can combine with the other filters.</li>
+    <li>Daily trade limits and the daily loss limit always count <b>all</b> instruments together, because they protect the whole account.</li>
+  </ul>
+  <div class="two">
+    <figure><img src="img/dash-picker.png"><figcaption>Dashboard showing EURUSD only.</figcaption></figure>
+    <figure><img src="img/card-eurusd.png"><figcaption>A EURUSD trade: prices keep all 5 decimals, R:R works out by itself.</figcaption></figure>
+  </div>
   <div class="box why"><b class="t">Good to know when trading something other than gold</b>
     <ul>
-      <li>Prices show the decimals you type (gold <code>2385.40</code>, EURUSD <code>1.08523</code>).</li>
-      <li>Money is in US dollars, and P&amp;L is typed in yourself from MT5. The app never calculates money from prices, because pip values differ by broker and instrument.</li>
+      <li>Prices show the decimals you type: gold <code>2385.40</code>, EURUSD <code>1.08523</code>, USDJPY <code>151.234</code>.</li>
+      <li><b>P&amp;L is typed in yourself from MT5</b>, in the account currency. The app never works out money from prices, because pip and point values differ by broker, instrument and lot size. MT5's number is always right.</li>
+      <li><b>R:R</b> and the result in <b>R</b> (P&amp;L ÷ Risk) work the same for every instrument.</li>
       <li>Sessions are fixed in GMT: London 07:00 to 11:00, New York 13:00 to 17:00, Asia 00:00 to 04:00. The app guesses the session from the time you type, using the device clock as GMT. If your friend is not on GMT (Ghana is), they should pick the session by hand.</li>
+      <li>The checklist presets are general price-action steps. Edit them to suit any market (5.2).</li>
     </ul></div>
   <h3>5.2 Checklist (strategy steps)</h3>
   <p><b>Checklist steps</b> card: load <span class="k">preset A: ICC</span> or <span class="k">preset B</span>, or edit names and descriptions, reorder with ↑ ↓, remove with ✕, add with <span class="k">+ Add step</span> (1 to 8 steps). Click <span class="k">Save checklist</span>.</p>
   <div class="box why"><b class="t">Why old trades don't change</b>Each trade stores a copy of the steps it was logged with. Changing strategy later never relabels old trades, so your history stays honest.</div>
-  <h3>5.3 Logging a trade (quick tour)</h3>
+  <h3 style="page-break-before:always">5.3 Logging a trade (quick tour)</h3>
   <div class="two">
     <figure><img src="img/form.png"><figcaption>Log trade tab: fields marked * are required.</figcaption></figure>
     <figure><img src="img/step.png"><figcaption>Each step: tap Confirm, add screenshots. On a laptop you can paste with Ctrl+V.</figcaption></figure>
@@ -257,7 +275,7 @@
 <section>
   <h3 style="margin-top:0">6.3 Connect the app on this device</h3>
   <ol>
-    <li>Open the journal app. Check the version is <b>v1.4 or newer</b> (part 4.3).</li>
+    <li>Open the journal app. Check the version is <b>v1.5 or newer</b> (part 4.3).</li>
     <li>Tap the <span class="k">Sync off</span> chip at the top right. It opens <b>Settings → Sync between devices</b>.</li>
     <li><b>GitHub username:</b> the friend's username, exactly. <b>Private repository name:</b> <code>trade-journal-data</code>.</li>
     <li>Click in <b>Access token</b> and paste (Ctrl+V on a laptop; long-press → Paste on a phone). Underneath it should say <b>"93 characters ✓ looks complete"</b> (or close to 93). Tap <span class="k">Show</span> to see what you pasted.</li>
@@ -325,8 +343,8 @@
   <h3>8.2 Editing the app yourself</h3>
   <p>Click a file on GitHub → the <b>pencil</b> icon → edit → <span class="k">Commit changes</span>. After <b>any</b> change to the app, also bump the version in two places, so phones stop using their offline copy:</p>
   <ol>
-    <li><code>sw.js</code>, line 3: <code>const CACHE = 'trade-journal-v1.4';</code> → change to <code>v1.5</code>.</li>
-    <li><code>index.html</code>: search (Ctrl+F) for <code>APP_VERSION</code> and change <code>'1.4'</code> to <code>'1.5'</code>. This is the number shown in Settings → About.</li>
+    <li><code>sw.js</code>, line 3: <code>const CACHE = 'trade-journal-v1.5';</code> → change to <code>v1.6</code>.</li>
+    <li><code>index.html</code>: search (Ctrl+F) for <code>APP_VERSION</code> and change <code>'1.5'</code> to <code>'1.6'</code>. This is the number shown in Settings → About.</li>
   </ol>
   <div class="box why"><b class="t">Why bump the version</b>The phone keeps a copy of the app so it works offline. A new version name tells it to throw the old copy away. Without it, a phone can keep showing the old app.</div>
   <h3>8.3 Your data is never in the app files</h3>
@@ -365,8 +383,8 @@
     <li>App: forked or uploaded; the repository's main page lists <code>index.html</code> directly. (Route A: skip.)</li>
     <li>Pages turned on: <b>main</b> / <b>(root)</b>; the site opens at <code>USERNAME.github.io/trade-journal/</code>.</li>
     <li>Installed on the phone's home screen.</li>
-    <li>Settings → About shows v1.4 or newer.</li>
-    <li>Main instrument, checklist and limits set.</li>
+    <li>Settings → About shows v1.5 or newer.</li>
+    <li>Main instrument, account currency, checklist and limits set.</li>
     <li>Private repository <code>trade-journal-data</code> created; the name ends in <code>data</code>, not <code>data-</code>.</li>
     <li>Laptop token: only <code>trade-journal-data</code>, Contents: Read and write, about a year's expiry; copied with the copy icon.</li>
     <li>Laptop connected: green chip.</li>

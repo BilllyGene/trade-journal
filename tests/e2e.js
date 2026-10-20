@@ -28,6 +28,7 @@ async function logTrade(page, t) {
   await page.click('nav button[data-tab="form"]');
   await page.fill('#f-date', t.date);
   if (t.time) await page.fill('#f-time', t.time);
+  if (t.instrument) await page.fill('#f-instrument', t.instrument);
   await page.selectOption('#f-session', t.session);
   await page.selectOption('#f-direction', t.direction);
   await page.selectOption('#f-outcome', t.outcome);
@@ -85,7 +86,7 @@ async function imagesLoaded(page, scope) {
     check('no NaN / Infinity anywhere', !/NaN|Infinity|undefined/.test(await page.textContent('#tab-dashboard')));
     check('"Log your first trade" button visible', await page.isVisible('#dashEmpty button'));
     check('reminders shown', (await page.textContent('#reminders')).includes('Keep risk the same'));
-    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.4');
+    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.5');
     const sw = await page.evaluate(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     check('service worker active over http', sw);
     check('no errors on fresh start', errors.length === 0, errors);
@@ -435,6 +436,29 @@ async function imagesLoaded(page, scope) {
     check('app opens offline after first visit', (await page.textContent('h1')) === 'Trade Journal');
     check('data still there offline', (await metrics(page))['Total trades'] === '5');
     await ctx.setOffline(false);
+
+    // ---------------------------------------------------------------- other instruments + currency
+    section('Other instruments and account currency');
+    check('dashboard picker lists the instruments in use (EURUSD, XAUUSD)', JSON.stringify(await page.$$eval('#dash-instrument option', o => o.map(x => x.value))) === '["","EURUSD","XAUUSD"]');
+    await logTrade(page, { date: today, time: '10:00', session: 'London', direction: 'Long', outcome: 'Win', entry: 1.08523, sl: 1.08423, tp: 1.08823, pnl: 30, plan: 'yes', instrument: 'GBPUSD' });
+    const gb = await page.locator('#tradeList .card[data-id]', { hasText: 'GBPUSD' }).textContent();
+    check('forex trade shows 5-decimal prices and R:R 1:3.00', gb.includes('1.08523') && gb.includes('1.08423') && gb.includes('1:3.00 (auto)'), gb);
+    await page.selectOption('#flt-instrument', 'GBPUSD');
+    check('log filter by instrument → 1', (await page.locator('#tradeList .card[data-id]').count()) === 1);
+    await page.click('#clearFilters');
+    await page.click('nav button[data-tab="dashboard"]');
+    check('dashboard instrument picker appears with 2 instruments', await page.isVisible('#dashInstrumentRow'));
+    await page.selectOption('#dash-instrument', 'GBPUSD');
+    const mg = await metrics(page);
+    check('GBPUSD only: 1 trade, +$30.00, no balance card', mg['Total trades'] === '1' && mg['Net P&L'] === '+$30.00' && !('Balance' in mg), mg);
+    await page.selectOption('#dash-instrument', '');
+    check('All instruments again: 6 trades', (await metrics(page))['Total trades'] === '6');
+    await page.click('nav button[data-tab="settings"]');
+    await page.fill('#s-currency', '€'); await page.click('#saveLimits');
+    await page.click('nav button[data-tab="dashboard"]');
+    check('account currency € used for money', (await metrics(page))['Net P&L'] === '+€130.00');
+    check('form labels show €', (await page.textContent('label[for="f-pnl"]')).includes('€'));
+    check('instrument suggestions offered', (await page.$$eval('#instrumentList option', o => o.map(x => x.value))).includes('EURUSD'));
 
     check('no page errors during the whole run', errors.length === 0, errors);
   } catch (e) {

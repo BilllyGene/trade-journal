@@ -122,7 +122,7 @@ If both devices already had trades, the first sync joins them together. Nothing 
 - **Log trade:** fill the form, tap **Confirm** on each checklist step you saw, add screenshots per step. On a laptop you can paste a screenshot with **Ctrl+V**: it goes into the highlighted step. Then tap **Save trade**.
 - **Trade log:** all trades, newest first. Filter by outcome, session, plan followed, or date. Each trade has **Edit**, **Duplicate** and **Delete**.
 - **Dashboard:** win rate, net P&L, profit factor, plan-followed rate, process vs result, equity curve, wins/losses by session, recent form.
-- **Settings:** edit your checklist steps (or load preset A or B), your mistake list, your reminders, trade limits, daily loss limit, starting balance, light/dark mode, and your backups.
+- **Settings:** set what you trade (main instrument: XAUUSD, EURUSD, US30… any instrument) and your account currency symbol; edit your checklist steps (or load preset A or B), your mistake list, your reminders, trade limits, daily loss limit, starting balance, light/dark mode, and your backups.
 
 Changing the checklist only affects **new** trades. Old trades always keep the steps they were saved with.
 

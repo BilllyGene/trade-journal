@@ -1,7 +1,7 @@
 {
   "name": "Trade Journal",
   "short_name": "Journal",
-  "description": "XAUUSD · Track, review, improve",
+  "description": "Trade journal · Track, review, improve",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
