@@ -85,7 +85,7 @@ async function imagesLoaded(page, scope) {
     check('no NaN / Infinity anywhere', !/NaN|Infinity|undefined/.test(await page.textContent('#tab-dashboard')));
     check('"Log your first trade" button visible', await page.isVisible('#dashEmpty button'));
     check('reminders shown', (await page.textContent('#reminders')).includes('Keep risk the same'));
-    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.3');
+    check('version shown in settings', (await page.textContent('#appVersion')) === 'v1.4');
     const sw = await page.evaluate(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     check('service worker active over http', sw);
     check('no errors on fresh start', errors.length === 0, errors);
@@ -194,10 +194,15 @@ async function imagesLoaded(page, scope) {
     // Starting balance + limits
     await page.click('nav button[data-tab="settings"]');
     await page.fill('#s-startBal', '1000'); await page.fill('#s-maxWeek', '2'); await page.fill('#s-lossLimit', '150'); await page.fill('#s-maxDay', '3');
+    await page.fill('#s-instrument', 'eurusd');
     await page.click('#saveLimits');
     await page.click('nav button[data-tab="dashboard"]');
+    check('main instrument setting changes the subtitle', (await page.textContent('#subtitle')) === 'EURUSD · Track, review, improve');
+    check('new trade form uses the main instrument', (await page.inputValue('#f-instrument')) === 'EURUSD');
     const mb = await metrics(page);
     check('Balance = 1000 + 100 = $1,100.00', mb['Balance'] === '$1,100.00', mb);
+    const px = await page.evaluate(() => [price(2385.4), price(1.08523), price(2400), price(1.1)]);
+    check('prices keep typed decimals (2385.40, 1.08523, 2400.00, 1.10)', JSON.stringify(px) === '["2385.40","1.08523","2400.00","1.10"]', px);
     check('Return = +10.0%', mb['Return'] === '+10.0%', mb);
     check('Equity title switches to balance', (await page.textContent('#equityTitle')).includes('balance'));
     const live = await page.textContent('.live-line');

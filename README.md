@@ -142,6 +142,10 @@ Changing the checklist only affects **new** trades. Old trades always keep the s
 
 ---
 
+## Setting it up for someone else
+
+A full, click-by-click guide (with pictures, and every problem we ran into) is in [`guide/Trade-Journal-Setup-Guide.pdf`](guide/Trade-Journal-Setup-Guide.pdf).
+
 ## For developers
 
 - `index.html`: the whole app (HTML, CSS, JS, no libraries). `SPEC.md`: the full specification. Read it before making changes.

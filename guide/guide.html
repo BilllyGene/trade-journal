@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trade Journal: Full Setup Guide</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  * { box-sizing: border-box; }
+  body { font: 10.6pt/1.5 "Segoe UI", -apple-system, Roboto, Arial, sans-serif; color: #1d2433; margin: 0; }
+  h1 { font-size: 26pt; margin: 0 0 4px; letter-spacing: -.01em; }
+  h2 { font-size: 16pt; margin: 0 0 8px; padding-top: 4px; border-bottom: 2px solid #1d4ed8; padding-bottom: 4px; }
+  h3 { font-size: 12pt; margin: 16px 0 6px; page-break-after: avoid; break-after: avoid; }
+  p { margin: 6px 0; }
+  ol, ul { margin: 6px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  code, .k { font-family: Consolas, "Courier New", monospace; background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 9.6pt; }
+  .k { font-family: inherit; font-weight: 600; background: #e8effd; color: #1d4ed8; }
+  section { page-break-before: always; }
+  .cover { padding-top: 40mm; }
+  .sub { color: #6b7280; font-size: 13pt; margin: 0 0 24px; }
+  .box { border-radius: 8px; padding: 9px 12px; margin: 10px 0; page-break-inside: avoid; }
+  .why { background: #e8effd; border-left: 4px solid #1d4ed8; }
+  .warn { background: #fff4e0; border-left: 4px solid #d97706; }
+  .ok { background: #e7f6ec; border-left: 4px solid #15803d; }
+  .box b.t { display: block; margin-bottom: 2px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 9.8pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #d6dae1; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f4f5f7; }
+  figure { margin: 10px 0; text-align: center; page-break-inside: avoid; }
+  figure img { max-width: 100%; max-height: 105mm; border: 1px solid #d6dae1; border-radius: 6px; }
+  .two figure img { max-height: 120mm; }
+  figure.phone img { max-width: 62%; }
+  figure.small img { max-width: 48%; }
+  figcaption { font-size: 9pt; color: #6b7280; margin-top: 3px; }
+  .two { display: flex; gap: 12px; align-items: flex-start; }
+  .two figure { flex: 1; }
+  .two figure img { max-width: 100%; }
+  .toc li { margin: 3px 0; }
+  .step { counter-increment: step; }
+  .diagram { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 14px 0; page-break-inside: avoid; font-size: 10pt; }
+  .dev { border: 2px solid #1d4ed8; border-radius: 10px; padding: 8px 10px; width: 150px; text-align: center; background: #f6f9ff; }
+  .cab { border: 2px solid #15803d; border-radius: 10px; padding: 10px; width: 190px; text-align: center; background: #f2fbf5; }
+  .arrow { font-size: 18pt; color: #6b7280; }
+  .small { font-size: 9.4pt; color: #4b5563; }
+  .check li { list-style: "☐  "; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Trade Journal</h1>
+  <p class="sub">Full setup guide: build your own copy from scratch, put it online,<br>install it on a phone, and sync laptop and phone.</p>
+  <div class="box why"><b class="t">Who this is for</b>Anyone setting up the journal for themselves or for a friend, starting with nothing. Every click is written out. Every problem we hit the first time is marked <b>⚠ Watch out</b>, with the fix.</div>
+  <h3>What you need</h3>
+  <ul>
+    <li>A laptop or desktop with a web browser (Chrome, Edge or Brave).</li>
+    <li>A phone, if you want the journal on the phone too.</li>
+    <li>An email address for a free GitHub account.</li>
+    <li>The file <code>trade-journal-app-files.zip</code> that came with this guide (only needed for Route B, part 3).</li>
+    <li>About 45 minutes the first time.</li>
+  </ul>
+  <h3>Contents</h3>
+  <ol class="toc">
+    <li>How it all fits together</li>
+    <li>Two ways to give your friend the journal (pick one)</li>
+    <li>Make your own copy: GitHub account, files, putting it online</li>
+    <li>Open it and install it on the phone</li>
+    <li>First settings: instrument, checklist, limits</li>
+    <li>Turn on sync between laptop and phone</li>
+    <li>Problems and fixes (everything we ran into)</li>
+    <li>Changing or updating the app later</li>
+    <li>The files: what each one does</li>
+    <li>Final checklist</li>
+  </ol>
+  <p class="small" style="margin-top:30px">Version of the app described here: <b>v1.4</b>. You can always see the version at the bottom of the app's Settings tab (picture in part 4).</p>
+</div>
+
+<!-- 1 -->
+<section>
+  <h2>1. How it all fits together</h2>
+  <p>Read this once. Most of the confusion the first time came from not having this picture.</p>
+  <h3>Three separate things</h3>
+  <table>
+    <tr><th style="width:24%">Thing</th><th>What it is</th><th style="width:30%">Where it lives</th></tr>
+    <tr><td><b>1. The app</b></td><td>The program: the screens, buttons and calculations. Just files. It holds <b>no</b> trades.</td><td>A <b>public</b> GitHub repository, published as a website by GitHub Pages.</td></tr>
+    <tr><td><b>2. Your trades on each device</b></td><td>Each browser keeps its own copy of the trades, like a notebook. The laptop's notebook and the phone's notebook are separate.</td><td>Inside the browser on that device.</td></tr>
+    <tr><td><b>3. The sync cabinet</b></td><td>A shared place both notebooks copy to and from, so they stay the same.</td><td>A second, <b>private</b> GitHub repository.</td></tr>
+  </table>
+  <div class="diagram">
+    <div class="dev"><b>Laptop</b><br>app + its own notebook</div>
+    <div class="arrow">⇄</div>
+    <div class="cab"><b>Private repo</b><br><code>trade-journal-data</code><br><span class="small">the sync cabinet</span></div>
+    <div class="arrow">⇄</div>
+    <div class="dev"><b>Phone</b><br>app + its own notebook</div>
+  </div>
+  <div class="box why"><b class="t">Why it is built this way</b>
+    No server to pay for or look after. The app is plain files that GitHub hosts for free. Trades stay on your devices. They only leave a device to go into <b>your own private</b> repository, which nobody else can open. A database service would need a monthly fee or a company holding your data.</div>
+  <div class="box warn"><b class="t">⚠ Watch out: what confused us</b>
+    We logged a trade on the laptop, opened the phone, and it was empty. Nothing was broken: <b>sync was not turned on yet</b>, so each notebook only had its own trades. Until sync is connected on <b>each</b> device, the top-right of the app shows <span class="k">Sync off</span>.</div>
+  <h3>Two keys you will make</h3>
+  <ul>
+    <li><b>The repository name</b> tells the app which cabinet to use: <code>trade-journal-data</code>.</li>
+    <li><b>An access token</b> is a long password that opens only that one cabinet. You make <b>one per device</b>: one for the laptop, one for the phone.</li>
+  </ul>
+</section>
+
+<!-- 2 -->
+<section>
+  <h2>2. Two ways to give your friend the journal</h2>
+  <p>You do <b>not</b> have to rebuild the app to give it to someone. Pick a route:</p>
+  <table>
+    <tr><th style="width:18%"></th><th>Route A: share your link</th><th>Route B: their own copy</th></tr>
+    <tr><td><b>What</b></td><td>Your friend opens <b>your</b> app link, e.g. <code>billlygene.github.io/trade-journal</code>.</td><td>Your friend gets their own GitHub account and their own copy of the app at <code>theirname.github.io/trade-journal</code>.</td></tr>
+    <tr><td><b>Their data</b></td><td>Fully separate from yours. Each browser has its own notebook, and they make their <b>own</b> private sync cabinet. You never see their trades and they never see yours.</td><td>Fully separate.</td></tr>
+    <tr><td><b>Time</b></td><td>About 20 minutes (parts 4 to 6 only).</td><td>About 45 minutes (parts 3 to 6).</td></tr>
+    <tr><td><b>Downside</b></td><td>If you change or delete your app, it changes for them too.</td><td>More steps. Updates you make don't reach them unless they copy them (part 8).</td></tr>
+  </table>
+  <div class="box why"><b class="t">Which to pick</b>
+    The app is only the program, not the data. Sharing it is like two people using the same calculator website: the numbers they type stay on their own devices. Pick <b>Route A</b> if your friend just wants a working journal. Pick <b>Route B</b> if they want to own it, change it, or not depend on you.</div>
+  <p><b>Route A:</b> skip part 3. Your friend still needs a free GitHub account for sync (part 3, step 3.1), then does parts 4, 5 and 6.</p>
+  <p><b>Route B:</b> follow every part in order.</p>
+  <h3>How we put the original online</h3>
+  <p>Claude wrote the files and saved them to the repository <code>BilllyGene/trade-journal</code> on its <code>main</code> branch. GitHub Pages then published them automatically, as it does after every change (it takes 1 to 2 minutes). Uploading the files through the GitHub website (part 3, option 2) does exactly the same job. You don't need any programming tools.</p>
+</section>
+
+<!-- 3 -->
+<section>
+  <h2>3. Make your own copy (Route B)</h2>
+  <h3>3.1 Create a GitHub account (skip if you have one)</h3>
+  <ol>
+    <li>Go to <code>github.com</code> → <span class="k">Sign up</span>.</li>
+    <li>Enter email, password and a username. <b>Write the username down exactly</b>: it becomes part of the app's web address and is typed into the app later. Example: <code>KwameFX</code>.</li>
+    <li>Confirm the email code GitHub sends. Choose the <b>Free</b> plan.</li>
+  </ol>
+
+  <h3>3.2 Get the app files into a repository: two options</h3>
+  <p><b>Option 1, easiest: Fork (copy) the original.</b> A fork is GitHub's one-click "make me a copy".</p>
+  <ol>
+    <li>Signed in as the friend, open <code>github.com/BilllyGene/trade-journal</code>.</li>
+    <li>Click <span class="k">Fork</span> (top right) → keep the name <code>trade-journal</code> → <span class="k">Create fork</span>.</li>
+    <li>Done. Go to 3.3.</li>
+  </ol>
+  <div class="box why"><b class="t">Why fork is the easiest</b>Every file lands in the right place automatically. Later, one button (<span class="k">Sync fork</span>) copies your improvements into theirs (part 8).</div>
+
+  <p><b>Option 2: upload the files yourself</b> (if you'd rather not depend on the original repository).</p>
+  <ol>
+    <li>On the computer, find <code>trade-journal-app-files.zip</code>. <b>Right-click → Extract All → Extract.</b> You get a folder with 7 files: <code>index.html</code>, <code>sw.js</code>, <code>manifest.json</code>, <code>icon.svg</code>, <code>icon-192.png</code>, <code>icon-512.png</code>, <code>README.md</code>.</li>
+    <li>On GitHub click <span class="k">+</span> (top right) → <span class="k">New repository</span>.</li>
+    <li>Repository name: <code>trade-journal</code>. Choose <b>Public</b>. Leave "Add a README" <b>unticked</b>. Click <span class="k">Create repository</span>.</li>
+    <li>On the next page, click the link <span class="k">uploading an existing file</span>.</li>
+    <li><b>Open the extracted folder, select all 7 files (Ctrl+A) and drag them</b> onto the GitHub page.</li>
+    <li>Wait until all 7 show in the list, then click the green <span class="k">Commit changes</span> at the bottom.</li>
+  </ol>
+  <div class="box warn"><b class="t">⚠ Watch out: files must sit at the top level</b>
+    Drag the <b>files</b>, not the folder and not the zip. If you drag the folder, GitHub puts everything inside a sub-folder, and the website shows a <b>404 "page not found"</b>. The repository's main page must list <code>index.html</code> directly. If it shows a folder name instead, delete the repository (Settings → bottom → Delete this repository) and upload again.</div>
+  <div class="box why"><b class="t">Why the app repository must be Public</b>On a free GitHub account, Pages only publishes public repositories. That only makes the <b>program</b> public: anyone could see how the app is built. Trades and screenshots are <b>never</b> stored here.</div>
+
+  <h3>3.3 Put it online with GitHub Pages</h3>
+  <ol>
+    <li>In the <code>trade-journal</code> repository, click <span class="k">Settings</span> (the tab with a gear, top of the repository).</li>
+    <li>Left menu: <span class="k">Pages</span>.</li>
+    <li>Under <b>Build and deployment → Source</b>, choose <span class="k">Deploy from a branch</span>.</li>
+    <li>Under <b>Branch</b>, choose <span class="k">main</span> and the folder <span class="k">/ (root)</span>. Click <span class="k">Save</span>.</li>
+    <li>Wait 1 to 2 minutes, then refresh the Pages settings page. A box appears: <b>"Your site is live at https://USERNAME.github.io/trade-journal/"</b>. Click <span class="k">Visit site</span>.</li>
+  </ol>
+  <div class="box ok"><b class="t">How to tell it worked</b>The site opens with the title <b>Trade Journal</b> and four tabs. If you see a 404, wait two more minutes and refresh. If it's still 404, check the "files at the top level" warning above.</div>
+</section>
+
+<!-- 4 -->
+<section>
+  <h2>4. Open it and install it on the phone</h2>
+  <h3>4.1 Open on the laptop</h3>
+  <p>Go to <code>https://USERNAME.github.io/trade-journal/</code> (Route A: your own link). Bookmark it.</p>
+  <figure class="phone"><img src="img/dash-syncoff.png"><figcaption>First visit. <b>Sync off</b> at the top right is normal until part 6 is done.</figcaption></figure>
+  <h3>4.2 Install on the phone</h3>
+  <ul>
+    <li><b>Android (Chrome):</b> open the link → tap <span class="k">⋮</span> (top right) → <span class="k">Add to Home screen</span> or <span class="k">Install app</span>.</li>
+    <li><b>iPhone (Safari):</b> open the link → tap the <span class="k">Share</span> button (square with an up-arrow) → <span class="k">Add to Home Screen</span> → <span class="k">Add</span>.</li>
+  </ul>
+  <div class="box why"><b class="t">Why install instead of just using the browser</b>It opens like an app and works with no internet. On iPhone it also matters for safety: Safari can delete a website's saved data if it isn't opened for a few weeks, and installed apps are protected from this.</div>
+  <h3>4.3 How to "refresh" and how to check the version</h3>
+  <p>You'll be asked to check the version whenever the app has been changed. Two things to know:</p>
+  <ul>
+    <li><b>Refresh</b> means reload the page. On a laptop, click the <b>circular arrow</b> left of the web address, or press <b>F5</b>. On a phone app, close it fully (swipe it away) and open it again.</li>
+    <li>The <b>version</b> is at the very bottom of the <span class="k">Settings</span> tab, in the last box called <b>About</b>:</li>
+  </ul>
+  <figure class="phone"><img src="img/about.png"><figcaption>Settings tab → scroll to the bottom → About.</figcaption></figure>
+  <div class="box warn"><b class="t">⚠ Watch out: the old version can stick for one refresh</b>The app keeps a copy of itself so it works offline. After a change it fetches the new version on the next open, but sometimes needs <b>two</b> refreshes. If the version number is old, refresh again.</div>
+</section>
+
+<!-- 5 -->
+<section>
+  <h2>5. First settings: instrument, checklist, limits</h2>
+  <p>Open the <span class="k">Settings</span> tab. Settings sync to the other device too, once part 6 is done. Light/Dark mode is the exception and stays per device.</p>
+  <h3>5.1 What you trade</h3>
+  <p>In <b>Rules and limits</b>, set <b>Main instrument</b> (e.g. <code>XAUUSD</code>, <code>EURUSD</code>, <code>US30</code>) and click <span class="k">Save</span>. It's filled in on every new trade and shown under the title. You can still type a different instrument on any single trade.</p>
+  <figure class="phone"><img src="img/limits.png"><figcaption>Rules and limits: main instrument, trade limits, loss limit, starting balance, reminders and mistake list.</figcaption></figure>
+  <div class="box why"><b class="t">Good to know when trading something other than gold</b>
+    <ul>
+      <li>Prices show the decimals you type (gold <code>2385.40</code>, EURUSD <code>1.08523</code>).</li>
+      <li>Money is in US dollars, and P&amp;L is typed in yourself from MT5. The app never calculates money from prices, because pip values differ by broker and instrument.</li>
+      <li>Sessions are fixed in GMT: London 07:00 to 11:00, New York 13:00 to 17:00, Asia 00:00 to 04:00. The app guesses the session from the time you type, using the device clock as GMT. If your friend is not on GMT (Ghana is), they should pick the session by hand.</li>
+    </ul></div>
+  <h3>5.2 Checklist (strategy steps)</h3>
+  <p><b>Checklist steps</b> card: load <span class="k">preset A: ICC</span> or <span class="k">preset B</span>, or edit names and descriptions, reorder with ↑ ↓, remove with ✕, add with <span class="k">+ Add step</span> (1 to 8 steps). Click <span class="k">Save checklist</span>.</p>
+  <div class="box why"><b class="t">Why old trades don't change</b>Each trade stores a copy of the steps it was logged with. Changing strategy later never relabels old trades, so your history stays honest.</div>
+  <h3>5.3 Logging a trade (quick tour)</h3>
+  <div class="two">
+    <figure><img src="img/form.png"><figcaption>Log trade tab: fields marked * are required.</figcaption></figure>
+    <figure><img src="img/step.png"><figcaption>Each step: tap Confirm, add screenshots. On a laptop you can paste with Ctrl+V.</figcaption></figure>
+  </div>
+  <p class="small">P&amp;L: use the <b>±</b> button for a loss, because the iPhone number keypad has no minus key. R:R fills itself from entry, SL and TP if you leave it blank.</p>
+</section>
+
+<!-- 6 -->
+<section>
+  <h2>6. Turn on sync between laptop and phone</h2>
+  <p>Do 6.1 once. Then do 6.2 and 6.3 on the <b>laptop</b>, and 6.2 and 6.3 again on the <b>phone</b>.</p>
+
+  <h3>6.1 Create the private cabinet (once)</h3>
+  <ol>
+    <li>On GitHub click <span class="k">+</span> (top right) → <span class="k">New repository</span>.</li>
+    <li>Repository name: type exactly <code>trade-journal-data</code>, with <b>no space at the end</b>.</li>
+    <li>Choose <span class="k">Private</span>. Click <span class="k">Create repository</span>. Leave it empty: the app fills it.</li>
+  </ol>
+  <div class="box warn"><b class="t">⚠ Watch out: this is what happened to us</b>
+    A space typed after the name made GitHub create <code>trade-journal-data<b>-</b></code>, with a dash at the end. The app then said <i>"Repository … not found"</i>.<br>
+    <b>Check:</b> the name at the top of the new repository page must end in <code>data</code>, not <code>data-</code>.<br>
+    <b>Fix:</b> open the repository → <span class="k">Settings</span> → <span class="k">General</span> → <b>Repository name</b> → remove the dash → <span class="k">Rename</span>. Tokens keep working after a rename.</div>
+  <div class="box why"><b class="t">Why it must be Private</b>Trades and screenshots are stored here. The app <b>refuses</b> to sync to a public repository and says so.</div>
+
+  <h3>6.2 Make an access token for this device</h3>
+  <p>Open this link (sign in if asked): <code>https://github.com/settings/personal-access-tokens/new</code></p>
+  <p class="small">The long way there: profile picture (top right) → <b>Settings</b> → bottom of the left menu <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.</p>
+  <table>
+    <tr><th style="width:30%">Field on the page</th><th>What to choose</th></tr>
+    <tr><td>Token name</td><td><code>journal laptop</code> (on the phone: <code>journal phone</code>)</td></tr>
+    <tr><td>Expiration</td><td><b>Custom</b> → a date about one year ahead (or <b>No expiration</b> if offered). <b>Not the 30-day default.</b></td></tr>
+    <tr><td>Repository access</td><td><span class="k">Only select repositories</span> → pick <code>trade-journal-data</code></td></tr>
+    <tr><td>Permissions</td><td><b>Contents → Read and write.</b> If you only see an <span class="k">Add permissions</span> button: click it, tick <b>Contents</b>, then set it to <b>Read and write</b>. Leave everything else alone.</td></tr>
+  </table>
+  <p>Click the green <span class="k">Generate token</span> at the bottom. The next page shows a green box with a code starting <code>github_pat_</code>. <b>Click the copy icon (two small squares) next to it straight away.</b></p>
+  <div class="box warn"><b class="t">⚠ Watch out: three things that tripped us up</b>
+    <ol>
+      <li><b>GitHub shows the code only once.</b> If you leave the page, it's hidden for good, and the token list only shows the name.</li>
+      <li><b>Select-and-copy by hand cut the code short.</b> A full code is about <b>93 characters</b>. Always use the copy icon.</li>
+      <li><b>30 days was the default expiry.</b> Sync would stop next month. Choose a year.</li>
+    </ol></div>
+  <div class="two">
+    <figure><img src="img/gh-token-list.png"><figcaption>The token list after creating it: only the name shows, never the code.</figcaption></figure>
+    <figure><img src="img/gh-token-access.png"><figcaption>Click the token's name to check its access. Here the repository has the unwanted dash at the end.</figcaption></figure>
+  </div>
+  <p><b>Lost the code?</b> Open the token list (<code>github.com/settings/personal-access-tokens</code>) → click the token's name → <span class="k">Regenerate token</span> → set the expiration → <span class="k">Regenerate token</span> → copy the new code with the copy icon. Regenerating <b>cancels the old code</b>, so paste the new one into the app.</p>
+  <figure><img src="img/gh-regenerate.png" style="max-width:85%"><figcaption>The Regenerate page. Change "30 days" to a longer expiry before clicking the green button.</figcaption></figure>
+</section>
+
+<section>
+  <h3 style="margin-top:0">6.3 Connect the app on this device</h3>
+  <ol>
+    <li>Open the journal app. Check the version is <b>v1.4 or newer</b> (part 4.3).</li>
+    <li>Tap the <span class="k">Sync off</span> chip at the top right. It opens <b>Settings → Sync between devices</b>.</li>
+    <li><b>GitHub username:</b> the friend's username, exactly. <b>Private repository name:</b> <code>trade-journal-data</code>.</li>
+    <li>Click in <b>Access token</b> and paste (Ctrl+V on a laptop; long-press → Paste on a phone). Underneath it should say <b>"93 characters ✓ looks complete"</b> (or close to 93). Tap <span class="k">Show</span> to see what you pasted.</li>
+    <li>Tap <span class="k">Connect and sync</span>.</li>
+  </ol>
+  <div class="two">
+    <figure><img src="img/sync-filled.png"><figcaption>Filled in correctly: the length check says "looks complete".</figcaption></figure>
+    <figure><img src="img/sync-on.png"><figcaption>Connected. Green "Last synced just now".</figcaption></figure>
+  </div>
+  <figure class="phone"><img src="img/chip-synced.png"><figcaption>The chip at the top right turns green on every tab.</figcaption></figure>
+
+  <h3>6.4 The other device</h3>
+  <p>On the phone, repeat <b>6.2</b> (new token, named <code>journal phone</code>) and <b>6.3</b>. Within seconds the laptop's trades appear on the phone. If both devices already had trades, the first sync joins them together and deletes nothing.</p>
+  <div class="box why"><b class="t">Why a separate token per device</b>If the phone is lost, you delete only the phone's token on GitHub and the laptop keeps working. You also never have to send a token over WhatsApp or email, where it could leak.</div>
+
+  <h3>6.5 Test it (2 minutes)</h3>
+  <ol>
+    <li>On the laptop, log a test trade.</li>
+    <li>On the phone, open the app (or tap the chip → <span class="k">Sync now</span>). The test trade appears.</li>
+    <li>On the phone, delete it (Trade log → Delete). On the laptop, tap <span class="k">Sync now</span>. It's gone.</li>
+  </ol>
+  <h3>How sync behaves from now on</h3>
+  <ul>
+    <li>It runs when the app opens, a few seconds after every change, every 5 minutes, and when the internet comes back.</li>
+    <li>With no internet you can keep logging. The chip says <span class="k">Offline</span> and it catches up later.</li>
+    <li>If the same trade is edited on both devices before a sync, the <b>later</b> edit wins. The other version is saved in the repository's <code>conflicts</code> folder, so nothing is lost.</li>
+    <li>Every sync is saved in the repository's history, so it also acts as a backup.</li>
+  </ul>
+</section>
+
+<!-- 7 -->
+<section>
+  <h2>7. Problems and fixes</h2>
+  <p>Everything below actually happened, or is the app's own warning message. Match what you see and do what's in the right-hand column.</p>
+  <table>
+    <tr><th style="width:36%">What you see</th><th style="width:30%">What it means</th><th>Fix</th></tr>
+    <tr><td><span class="k">Sync off</span> chip, and the other device doesn't show the trades</td><td>Sync isn't connected on <b>this</b> device yet.</td><td>Part 6.2 and 6.3 on this device.</td></tr>
+    <tr><td>Yellow box: <i>"Your trades are only saved on this device, and sync is off…"</i></td><td>Same as above. Without sync or a backup, losing the browser data loses the trades.</td><td>Click <span class="k">Set up sync</span>, or <span class="k">Back up now</span>.</td></tr>
+    <tr><td>Couldn't find the <code>github_pat_</code> code</td><td>GitHub shows it only once, right after creating it.</td><td>Token list → token name → <span class="k">Regenerate token</span> → copy with the copy icon.</td></tr>
+    <tr><td><i>"This token is only NN characters long…"</i></td><td>Only part of the code was copied.</td><td>Copy again with the copy icon. A full code is about 93 characters.</td></tr>
+    <tr><td><i>"This does not look like a GitHub token"</i></td><td>Something else was pasted (e.g. the token's name).</td><td>Paste the <code>github_pat_…</code> code.</td></tr>
+    <tr><td><i>"GitHub did not accept the access token…"</i></td><td>The code is old (regenerated since), expired, or incomplete.</td><td>Regenerate, then paste the new code.</td></tr>
+    <tr><td><i>"Repository "…/trade-journal-data-" not found…"</i></td><td>The name differs from GitHub's: a dash at the end, a typo, or the token wasn't given this repository.</td><td>Rename the repository (part 6.1), or fix the spelling. Check the token's <b>Repository access</b>.</td></tr>
+    <tr><td><i>"The repository … is PUBLIC…"</i></td><td>The data cabinet was created as Public.</td><td>Repository → Settings → General → bottom: <b>Change visibility</b> → Private.</td></tr>
+    <tr><td>Red <span class="k">Sync problem</span> chip after months of working</td><td>Usually the token expired.</td><td>Regenerate the token, then paste it again in Settings → Sync.</td></tr>
+    <tr><td><span class="k">Offline</span> chip</td><td>No internet. Not an error.</td><td>Nothing. It syncs by itself later.</td></tr>
+    <tr><td>Website shows 404</td><td>Pages isn't on yet, still building, or the files are in a sub-folder.</td><td>Wait 2 minutes. Check part 3.3 and the "top level" warning in 3.2.</td></tr>
+    <tr><td>A new feature doesn't show up</td><td>The old copy is still cached.</td><td>Refresh once or twice. Check the version in Settings → About.</td></tr>
+    <tr><td>Phone lost or replaced</td><td>The trades are safe in the private repository.</td><td>On GitHub, delete the old phone's token. On the new phone, install the app and do part 6.2 and 6.3: everything downloads again.</td></tr>
+  </table>
+  <div class="box warn"><b class="t">⚠ Two buttons that behave differently when sync is on</b>
+    <b>Delete all trades and screenshots</b> (Settings → Danger zone) only clears <b>this device</b>. Everything comes back from GitHub on the next sync. To remove a trade everywhere, delete it from the <b>Trade log</b>.<br>
+    <b>Import → Replace all</b> also only replaces this device. Trades in GitHub that aren't in the backup come back on the next sync.</div>
+</section>
+
+<!-- 8 -->
+<section>
+  <h2>8. Changing or updating the app later</h2>
+  <h3>8.1 Getting updates</h3>
+  <ul>
+    <li><b>Route A (shared link):</b> nothing to do. Updates to the original reach everyone after a refresh.</li>
+    <li><b>Route B with a fork:</b> open the friend's <code>trade-journal</code> repository → <span class="k">Sync fork</span> → <span class="k">Update branch</span>. Pages republishes in 1 to 2 minutes.</li>
+    <li><b>Route B with uploaded files:</b> in the repository, <span class="k">Add file</span> → <span class="k">Upload files</span> → drag the new file(s) with the same names → <span class="k">Commit changes</span>. Files with the same name are replaced.</li>
+  </ul>
+  <h3>8.2 Editing the app yourself</h3>
+  <p>Click a file on GitHub → the <b>pencil</b> icon → edit → <span class="k">Commit changes</span>. After <b>any</b> change to the app, also bump the version in two places, so phones stop using their offline copy:</p>
+  <ol>
+    <li><code>sw.js</code>, line 3: <code>const CACHE = 'trade-journal-v1.4';</code> → change to <code>v1.5</code>.</li>
+    <li><code>index.html</code>: search (Ctrl+F) for <code>APP_VERSION</code> and change <code>'1.4'</code> to <code>'1.5'</code>. This is the number shown in Settings → About.</li>
+  </ol>
+  <div class="box why"><b class="t">Why bump the version</b>The phone keeps a copy of the app so it works offline. A new version name tells it to throw the old copy away. Without it, a phone can keep showing the old app.</div>
+  <h3>8.3 Your data is never in the app files</h3>
+  <p>Editing, replacing or even deleting the <code>trade-journal</code> app repository never touches trades. They live in each browser and in <code>trade-journal-data</code>. Still export a <b>full backup (.json)</b> from Settings → Data now and then: it costs nothing and doesn't depend on GitHub.</p>
+</section>
+
+<!-- 9 -->
+<section>
+  <h2>9. The files: what each one does</h2>
+  <p>All files sit at the top level of the <code>trade-journal</code> repository (no folders needed).</p>
+  <table>
+    <tr><th style="width:24%">File</th><th>What it does</th><th style="width:18%">Needed?</th></tr>
+    <tr><td><code>index.html</code></td><td>The whole app: screens, styling, calculations, storage and sync, in one file. Opening it straight from the computer (double-click) also works, but that copy has its own separate notebook.</td><td><b>Yes</b></td></tr>
+    <tr><td><code>sw.js</code></td><td>The "service worker": lets the app open with no internet, and fetches new versions.</td><td>Yes (for offline)</td></tr>
+    <tr><td><code>manifest.json</code></td><td>Name, colour and icon used when installing on a phone home screen.</td><td>Yes (for install)</td></tr>
+    <tr><td><code>icon.svg</code>, <code>icon-192.png</code>, <code>icon-512.png</code></td><td>The app icon in different sizes.</td><td>Yes</td></tr>
+    <tr><td><code>README.md</code></td><td>Short instructions shown on the repository's GitHub page.</td><td>Optional</td></tr>
+    <tr><td><code>SPEC.md</code>, <code>tests/</code>, <code>guide/</code></td><td>Only in the original repository: the full specification, automatic tests, and this guide. Not needed to run the app.</td><td>No</td></tr>
+  </table>
+  <h3>What the private cabinet holds (created by the app)</h3>
+  <table>
+    <tr><th style="width:30%">In <code>trade-journal-data</code></th><th>What it is</th></tr>
+    <tr><td><code>journal.json</code></td><td>All trades and settings.</td></tr>
+    <tr><td><code>shots/</code></td><td>The screenshots, one file each.</td></tr>
+    <tr><td><code>conflicts/</code></td><td>Only if a trade was edited on two devices at once: the version that lost.</td></tr>
+    <tr><td><code>README.md</code></td><td>A note saying "keep this private".</td></tr>
+  </table>
+  <div class="box warn"><b class="t">⚠ Don't edit the cabinet's files by hand</b>Change trades in the app. Editing <code>journal.json</code> on GitHub could break sync.</div>
+</section>
+
+<!-- 10 -->
+<section>
+  <h2>10. Final checklist</h2>
+  <ul class="check">
+    <li>GitHub account created; username written down exactly.</li>
+    <li>App: forked or uploaded; the repository's main page lists <code>index.html</code> directly. (Route A: skip.)</li>
+    <li>Pages turned on: <b>main</b> / <b>(root)</b>; the site opens at <code>USERNAME.github.io/trade-journal/</code>.</li>
+    <li>Installed on the phone's home screen.</li>
+    <li>Settings → About shows v1.4 or newer.</li>
+    <li>Main instrument, checklist and limits set.</li>
+    <li>Private repository <code>trade-journal-data</code> created; the name ends in <code>data</code>, not <code>data-</code>.</li>
+    <li>Laptop token: only <code>trade-journal-data</code>, Contents: Read and write, about a year's expiry; copied with the copy icon.</li>
+    <li>Laptop connected: green chip.</li>
+    <li>Phone token made (separate); phone connected: green chip.</li>
+    <li>Test trade appears on the other device, and deleting it removes it on both.</li>
+    <li>A calendar reminder set for 11 months ahead: "renew the journal tokens".</li>
+  </ul>
+  <div class="box ok"><b class="t">Done</b>From here on, just log trades. Both devices stay in step by themselves, and the private repository keeps a full history as a backup.</div>
+</section>
+
+</body>
+</html>

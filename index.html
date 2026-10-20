@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Trade Journal</title>
-<meta name="description" content="XAUUSD trade journal: track, review, improve.">
+<meta name="description" content="Trade journal: track, review, improve.">
 <meta name="theme-color" content="#1d4ed8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -255,7 +255,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 <body>
 <div class="wrap">
   <header>
-    <div style="flex:1;min-width:0"><h1>Trade Journal</h1><p class="sub">XAUUSD · Track, review, improve</p></div>
+    <div style="flex:1;min-width:0"><h1>Trade Journal</h1><p class="sub" id="subtitle">XAUUSD · Track, review, improve</p></div>
     <button type="button" id="syncChip" class="sync-chip hidden" title="Sync between devices"></button>
   </header>
 
@@ -420,6 +420,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <div class="field"><label class="lbl" for="s-maxDay">Max trades per day</label><input type="text" inputmode="numeric" id="s-maxDay" placeholder="blank = hide"></div>
         <div class="field"><label class="lbl" for="s-maxWeek">Max trades per week</label><input type="text" inputmode="numeric" id="s-maxWeek" placeholder="blank = hide"></div>
         <div class="field"><label class="lbl" for="s-lossLimit">Daily loss limit ($)</label><input type="text" inputmode="decimal" id="s-lossLimit" placeholder="blank = hide"></div>
+        <div class="field full"><label class="lbl" for="s-instrument">Main instrument</label><input type="text" id="s-instrument" autocapitalize="characters" placeholder="e.g. XAUUSD, EURUSD, US30"><div class="hint">Filled in for every new trade and shown at the top. You can still type a different one on any trade.</div></div>
         <div class="field"><label class="lbl" for="s-startBal">Starting balance ($)</label><input type="text" inputmode="decimal" id="s-startBal" placeholder="optional"></div>
         <div class="field full"><label class="lbl" for="s-reminders">Dashboard reminders (one per line)</label><textarea id="s-reminders" rows="4"></textarea></div>
         <div class="field full"><label class="lbl" for="s-mistakes">Mistake options (one per line)</label><textarea id="s-mistakes" rows="6"></textarea></div>
@@ -436,7 +437,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <ol class="steps">
           <li>On GitHub, create a new <strong>private</strong> repository named <code>trade-journal-data</code>.</li>
           <li>Create a <strong>fine-grained access token</strong>: only that repository, permission <em>Contents: Read and write</em>.</li>
-          <li>Fill in below and tap Connect. Do the same on your other device with the same token.</li>
+          <li>Fill in below and tap Connect. Then do steps 2 and 3 on your other device, with a new token made for that device.</li>
         </ol>
         <div class="grid2">
           <div class="field"><label class="lbl" for="s-ghOwner">GitHub username</label><input type="text" id="s-ghOwner" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. BilllyGene"></div>
@@ -501,7 +502,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -528,7 +529,7 @@ const DEFAULT_REMINDERS = ['Keep risk the same on every trade.', 'Probability ov
 function defaultSettings() {
   return {
     key: 'settings', checklist: clone(PRESET_A), mistakes: DEFAULT_MISTAKES.slice(), reminders: DEFAULT_REMINDERS.slice(),
-    maxTradesDay: null, maxTradesWeek: null, dailyLossLimit: null, startingBalance: null, theme: 'auto', updatedAt: null
+    maxTradesDay: null, maxTradesWeek: null, dailyLossLimit: null, startingBalance: null, instrument: 'XAUUSD', theme: 'auto', updatedAt: null
   };
 }
 
@@ -587,7 +588,12 @@ function money(n, signed = true) {
   if (n < 0) return `${MINUS}$${abs}`;
   return signed ? `+$${abs}` : `$${abs}`;
 }
-function price(n) { return n == null || !isFinite(n) ? '—' : Number(n).toFixed(2); }
+// Prices keep the decimals typed (gold 2385.40, EURUSD 1.08523): at least 2, at most 5.
+function price(n) {
+  if (n == null || !isFinite(n)) return '—';
+  const dec = (String(n).split('.')[1] || '').length;
+  return Number(n).toFixed(Math.min(5, Math.max(2, dec)));
+}
 function pct(x) { return x == null || !isFinite(x) ? '—' : `${(x * 100).toFixed(1)}%`; }
 function rFmt(r) { if (r == null || !isFinite(r)) return '—'; const s = Math.abs(r).toFixed(1); return r > 0.04 ? `+${s}R` : r < -0.04 ? `${MINUS}${s}R` : '0.0R'; }
 function rrFmt(rr) { return rr == null || !isFinite(rr) ? '—' : `1:${rr.toFixed(2)}`; }
@@ -769,6 +775,7 @@ function normalizeSettings(s) {
   out.reminders = Array.isArray(s.reminders) ? s.reminders.map(String) : DEFAULT_REMINDERS.slice();
   ['maxTradesDay', 'maxTradesWeek', 'dailyLossLimit', 'startingBalance'].forEach(k => { out[k] = numOrNull(out[k]); });
   if (!['light', 'dark', 'auto'].includes(out.theme)) out.theme = 'auto';
+  out.instrument = String(out.instrument || '').trim().toUpperCase() || 'XAUUSD';
   return out;
 }
 function shotIdsOf(t) { return t.stepScreenshots.flat().concat(t.generalScreenshots); }
@@ -907,7 +914,7 @@ function resetForm() {
   draft = newDraft();
   draft.confirmed = draft.checklist.map(() => false);
   draft.stepShots = draft.checklist.map(() => []);
-  F('date').value = todayStr(); F('time').value = ''; F('instrument').value = 'XAUUSD';
+  F('date').value = todayStr(); F('time').value = ''; F('instrument').value = settings.instrument;
   F('session').value = sessionFromTime(nowHHMM()) || 'Other';
   F('direction').value = 'Long'; F('outcome').value = '';
   ['entry', 'exit', 'sl', 'tp', 'lot', 'risk', 'pnl', 'rr', 'notes'].forEach(k => { F(k).value = ''; });
@@ -1054,7 +1061,7 @@ function readForm() {
   v.date = F('date').value;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date)) errors.push(['date', 'Please enter the date.']);
   v.time = F('time').value || '';
-  v.instrument = F('instrument').value.trim().toUpperCase() || 'XAUUSD';
+  v.instrument = F('instrument').value.trim().toUpperCase() || settings.instrument;
   v.session = F('session').value; v.direction = F('direction').value;
   v.outcome = F('outcome').value;
   if (!v.outcome) errors.push(['outcome', 'Choose Win, Loss, Breakeven or Open.']);
@@ -1467,6 +1474,7 @@ async function applyChecklist(list, what) {
 }
 function renderLimits() {
   $('s-maxDay').value = settings.maxTradesDay ?? ''; $('s-maxWeek').value = settings.maxTradesWeek ?? '';
+  $('s-instrument').value = settings.instrument; $('subtitle').textContent = `${settings.instrument} · Track, review, improve`;
   $('s-lossLimit').value = settings.dailyLossLimit ?? ''; $('s-startBal').value = settings.startingBalance ?? '';
   $('s-reminders').value = settings.reminders.join('\n'); $('s-mistakes').value = settings.mistakes.join('\n');
 }
@@ -1481,9 +1489,10 @@ async function saveLimits() {
   $('limitsErr').textContent = errs.join(' ');
   if (errs.length) return;
   const lines = id => [...new Set($(id).value.split('\n').map(s => s.trim()).filter(Boolean))];
+  vals.instrument = $('s-instrument').value.trim().toUpperCase() || 'XAUUSD';
   vals.reminders = lines('s-reminders'); vals.mistakes = lines('s-mistakes');
   try { await saveSettings(vals); } catch (err) { toast('Not saved. ' + storageAdvice(err), true); return; }
-  renderLimits(); renderFormDynamic(); refreshAll(); toast('Settings saved');
+  renderLimits(); if (!draft.dirty && !draft.editingId) resetForm(); else renderFormDynamic(); refreshAll(); toast('Settings saved');
 }
 async function renderDataInfo() {
   const live = liveTrades();
@@ -2029,6 +2038,7 @@ function wire() {
     finally { $('syncConnect').disabled = false; $('syncConnect').textContent = 'Connect and sync'; }
   });
   $('syncChip').addEventListener('click', openSyncSettings);
+  ['s-ghOwner', 's-ghRepo', 's-ghToken'].forEach(id => $(id).addEventListener('input', () => { $('syncConnErr').textContent = ''; }));
   $('tokenShow').addEventListener('click', () => { const t = $('s-ghToken'); const show = t.type === 'password'; t.type = show ? 'text' : 'password'; $('tokenShow').textContent = show ? 'Hide' : 'Show'; });
   $('s-ghToken').addEventListener('input', () => { const v = $('s-ghToken').value.trim(); $('tokenHint').textContent = v ? `${v.length} characters${v.startsWith('github_pat_') ? (v.length >= 80 ? ' ✓ looks complete' : ' (too short: a full token is about 93)') : ''}` : ''; });
   $('syncNow').addEventListener('click', () => sync.run({ manual: true }));
