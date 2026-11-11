@@ -128,6 +128,11 @@ Changing the checklist only affects **new** trades. Old trades always keep the s
 
 ---
 
+## Automatic numbers and reading screenshots
+
+- **R:R, Risk, P&L and Outcome fill themselves** from the prices and lot size, for gold, silver and forex pairs (blue boxes). P&L is an estimate: MT5 adds commission and swap, so type MT5's figure over it if it differs. For indices or crypto, set "Money per 1.00 price move" in Settings.
+- **📷 Fill from screenshot** (Log trade tab) sends a trade screenshot to Claude (Anthropic's AI), which fills the boxes for you to check (yellow boxes). Boxes you already typed are never overwritten. It needs your own Claude API key from console.anthropic.com (Settings → Read trades from screenshots) and costs roughly 2–4 US cents per screenshot. The key stays on the device where you enter it.
+
 ## 8. Turn on GitHub Pages (one time)
 
 1. On GitHub, open this repository.

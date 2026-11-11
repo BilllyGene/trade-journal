@@ -88,6 +88,7 @@ button.btn.primary { background: var(--blue); border-color: var(--blue); color: 
 button.btn.danger { color: var(--red); border-color: var(--red); }
 button.btn.small { min-height: 36px; padding: 4px 10px; font-size: 13px; }
 button.btn:disabled { opacity: .45; cursor: not-allowed; }
+label.btn.disabled { opacity: .45; pointer-events: none; }
 :root[data-theme="dark"] button.btn.primary { color: #0f1115; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.btn.primary { color: #0f1115; } }
 
@@ -230,6 +231,18 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 .steps li { margin: 4px 0; }
 
 /* Lightbox, toast, banner */
+/* Auto-filled boxes and screenshot reading */
+.ai-box { border: 1.5px dashed var(--blue); border-radius: 10px; padding: 10px; margin: 0 0 10px; background: var(--blue-bg); }
+.ai-box.shot-target { outline: 2px solid var(--blue); outline-offset: 1px; }
+#aiStatus:not(:empty) { margin-top: 8px; }
+#aiStatus ul { margin: 4px 0; padding-left: 18px; }
+#tradeForm input.auto, #tradeForm select.auto { background: var(--blue-bg); }
+#tradeForm input.ai, #tradeForm select.ai { background: var(--amber-bg); border-color: var(--amber); }
+.auto-legend { margin: 0 0 10px; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--input-border); }
+.sw-auto { background: var(--blue-bg); } .sw-ai { background: var(--amber-bg); border-color: var(--amber); }
+.est { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+
 /* In-app guide */
 .help-btn { color: var(--blue); border-color: var(--blue); }
 .help-btn b { font-weight: 800; }
@@ -368,6 +381,14 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       <div class="card">
         <div id="editNote" class="edit-note hidden"></div>
         <h2 id="formTitle">Log a trade</h2>
+        <div class="ai-box" id="aiBox">
+          <div class="row">
+            <label class="btn" id="aiPick">📷 Fill from screenshot<input type="file" id="aiFile" accept="image/png,image/jpeg,image/webp" class="hidden"></label>
+            <span class="hint" style="flex:1;min-width:180px;margin:0">Choose a screenshot of the trade (MT5 or chart). On a laptop you can also click this box and press Ctrl+V. The boxes fill in by themselves; you check them.</span>
+          </div>
+          <div id="aiStatus" class="small"></div>
+        </div>
+        <p class="hint auto-legend"><span class="sw sw-auto"></span>worked out by the app · <span class="sw sw-ai"></span>read from your screenshot: check it. Type over any box to change it.</p>
         <div class="grid2">
           <div class="field" data-f="date"><label class="lbl" for="f-date">Date <span class="req">*</span></label><input type="date" id="f-date"><div class="err"></div></div>
           <div class="field" data-f="time"><label class="lbl" for="f-time">Time</label><input type="time" id="f-time"><div class="err"></div></div>
@@ -388,7 +409,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
           <div class="field" data-f="sl"><label class="lbl" for="f-sl">Stop loss</label><input type="text" inputmode="decimal" id="f-sl"><div class="err"></div></div>
           <div class="field" data-f="tp"><label class="lbl" for="f-tp">Take profit</label><input type="text" inputmode="decimal" id="f-tp"><div class="err"></div></div>
           <div class="field" data-f="lot"><label class="lbl" for="f-lot">Lot size</label><input type="text" inputmode="decimal" id="f-lot"><div class="err"></div></div>
-          <div class="field" data-f="risk"><label class="lbl" for="f-risk">Risk (<span class="cur">$</span>)</label><input type="text" inputmode="decimal" id="f-risk" placeholder="money at risk"><div class="err"></div></div>
+          <div class="field" data-f="risk"><label class="lbl" for="f-risk">Risk (<span class="cur">$</span>)</label><input type="text" inputmode="decimal" id="f-risk" placeholder="money at risk"><div class="hint" id="riskHint"></div><div class="err"></div></div>
           <div class="field" data-f="pnl"><label class="lbl" for="f-pnl">P&amp;L (<span class="cur">$</span>)</label>
             <div class="inline-input"><input type="text" inputmode="decimal" id="f-pnl" placeholder="e.g. 125.50"><button type="button" class="icon-btn" id="pnlSign" title="Switch plus / minus" aria-label="Switch plus or minus">±</button></div>
             <div class="hint" id="pnlHint"></div><div class="err"></div></div>
@@ -456,6 +477,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <div class="field"><label class="lbl" for="s-maxWeek">Max trades per week</label><input type="text" inputmode="numeric" id="s-maxWeek" placeholder="blank = hide"></div>
         <div class="field"><label class="lbl" for="s-lossLimit">Daily loss limit (<span class="cur">$</span>)</label><input type="text" inputmode="decimal" id="s-lossLimit" placeholder="blank = hide"></div>
         <div class="field"><label class="lbl" for="s-instrument">Main instrument</label><input type="text" id="s-instrument" autocapitalize="characters" placeholder="e.g. XAUUSD, EURUSD, US30" list="instrumentList"><div class="hint">Filled in for every new trade and shown at the top. Any trade can use a different one.</div></div>
+        <div class="field full"><label class="lbl" for="s-contract">Money per 1.00 price move for 1 lot (optional)</label><input type="text" inputmode="decimal" id="s-contract" placeholder="blank = automatic"><div class="hint">Used to estimate P&amp;L and risk for your main instrument. Leave blank for gold, silver and forex pairs: they are worked out automatically. For indices or crypto, enter what your broker pays, e.g. 1 for US30 at many brokers.</div></div>
         <div class="field"><label class="lbl" for="s-currency">Account currency symbol</label><input type="text" id="s-currency" maxlength="4" placeholder="$"><div class="hint">The currency of your trading account, e.g. $, €, £, GH₵. Used for P&amp;L, risk and balance.</div></div>
         <div class="field"><label class="lbl" for="s-startBal">Starting balance (<span class="cur">$</span>)</label><input type="text" inputmode="decimal" id="s-startBal" placeholder="optional"></div>
         <div class="field full"><label class="lbl" for="s-reminders">Dashboard reminders (one per line)</label><textarea id="s-reminders" rows="4"></textarea></div>
@@ -463,6 +485,28 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       </div>
       <div class="err" id="limitsErr"></div>
       <div class="row" style="margin-top:8px"><span class="spacer"></span><button type="button" class="btn primary small" id="saveLimits">Save</button></div>
+    </div>
+
+    <div class="card" id="aiCard">
+      <h2>Read trades from screenshots</h2>
+      <p class="small" style="margin-top:0">The <b>📷 Fill from screenshot</b> button on Log trade sends the picture to Claude (Anthropic's AI), which reads the prices and fills the form for you to check. It needs your own Claude API key. Each screenshot costs roughly 2 to 4 US cents, paid from credit on your Anthropic account.</p>
+      <div id="aiSetup">
+        <ol class="steps">
+          <li>Go to <b>console.anthropic.com</b> and sign up. This is separate from a Claude chat subscription.</li>
+          <li><b>Billing</b> → add credit (the minimum, e.g. $5, covers a few hundred screenshots). Tip: set a monthly spend limit there too.</li>
+          <li><b>API keys</b> → <b>Create key</b> → copy it (it starts with <code>sk-ant-</code>).</li>
+          <li>Paste it below and tap <b>Save key</b>.</li>
+        </ol>
+        <div class="field"><label class="lbl" for="s-aiKey">Claude API key</label>
+          <div class="inline-input"><input type="password" id="s-aiKey" autocomplete="off" spellcheck="false" placeholder="sk-ant-…"><button type="button" class="icon-btn" id="aiKeyShow" style="padding:0 10px">Show</button></div></div>
+        <p class="hint">Kept only in this browser on this device: never synced and never in backups. Add it on each device where you want screenshot reading.</p>
+        <div class="err" id="aiErr"></div>
+        <div class="row" style="margin-top:6px"><button type="button" class="btn primary small" id="aiSave">Save key</button></div>
+      </div>
+      <div id="aiOn" class="hidden">
+        <div class="sync-status ok"><i></i>Screenshot reading is on for this device</div>
+        <div class="row"><button type="button" class="btn small" id="aiRemove">Remove key from this device</button></div>
+      </div>
     </div>
 
     <div class="card" id="syncCard">
@@ -560,14 +604,18 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <tr><td>Entry price *</td><td>Exactly as MT5 shows it. Decimals are kept (2385.40, 1.08523).</td></tr>
         <tr><td>Exit / SL / TP</td><td>Leave Exit blank while the trade is open.</td></tr>
         <tr><td>Lot size</td><td>Optional, for your own records.</td></tr>
-        <tr><td>Risk</td><td>Money you would lose if the stop is hit. When filled, the app shows your result in <b>R</b> (e.g. +2.0R = you made twice what you risked).</td></tr>
-        <tr><td>P&amp;L</td><td>Copy from MT5. For a loss tap <b>±</b> to make it negative (iPhone keypads have no minus key). The app never calculates money itself, because pip values differ by broker and instrument.</td></tr>
-        <tr><td>R:R ratio</td><td>Leave blank and it is worked out from Entry, SL and TP (shown under the box). Type a number only to override it.</td></tr>
+        <tr><td>Risk</td><td><b>Fills itself</b> from Entry, SL and lot size for gold, silver and forex pairs. It's the money you lose if the stop is hit. With Risk filled, the app shows your result in <b>R</b> (e.g. +2.0R = you made twice what you risked).</td></tr>
+        <tr><td>P&amp;L</td><td><b>Fills itself</b> once Entry, Exit and lot size are in, as an estimate. MT5 also charges commission and swap, so type MT5's exact figure over it when it differs. For a loss tap <b>±</b> to make it negative (iPhone keypads have no minus key). Estimated P&amp;L is marked "est." in the Trade log.</td></tr>
+        <tr><td>R:R ratio</td><td><b>Fills itself</b> from Entry, SL and TP. Type a number only to override it.</td></tr>
+        <tr><td>Outcome *</td><td>Picked for you from the P&amp;L sign once the trade has an exit (Win, Loss or Breakeven). Choose <b>Open</b> yourself for a running trade.</td></tr>
         <tr><td>Setup grade</td><td>A+ (everything lined up) to C (weak). Later you can see whether A+ setups really pay better.</td></tr>
         <tr><td>Followed my plan? *</td><td>Required unless the trade is Open. The most important question in the journal: see "Process vs result" in part 4.</td></tr>
         <tr><td>Mistakes</td><td>Tap all that apply. Edit the list in Settings.</td></tr>
         <tr><td>Emotion / Notes</td><td>How you felt before entering, and anything you noticed on the chart.</td></tr>
       </table>
+      <h4>Blue and yellow boxes</h4>
+      <p><span class="sw sw-auto"></span><b>Blue</b> = worked out by the app. <span class="sw sw-ai"></span><b>Yellow</b> = read from your screenshot (part 11): check it. Typing in a box makes it yours, and the app stops changing it.</p>
+      <p class="why"><b>Why the estimate might differ from MT5:</b> the app multiplies the price move by your lot size and the contract size (100 oz per lot for gold, 100,000 units for forex). MT5 also takes off commission and swap. For indices or crypto, set "Money per 1.00 price move" in Settings, because brokers differ.</p>
       <h4>Checklist and screenshots</h4>
       <ul>
         <li>Each step has a <b>Confirm</b> button. Only confirm what you actually saw before entering.</li>
@@ -643,6 +691,8 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <li><b>Appearance</b>: Light, Dark or Auto (follows the phone or laptop setting).</li>
         <li><b>Checklist steps</b>: load preset A (ICC) or B, or write your own 1 to 8 steps, reorder with ↑ ↓, then <b>Save checklist</b>. Old trades keep the steps they were logged with, so your history stays honest when your strategy changes.</li>
         <li><b>Main instrument</b> and <b>Account currency symbol</b>: what you trade most, and the money symbol used everywhere.</li>
+        <li><b>Money per 1.00 price move for 1 lot</b>: only needed if the automatic P&amp;L/Risk estimate is missing or wrong for your main instrument (e.g. indices).</li>
+        <li><b>Read trades from screenshots</b>: where you save your Claude API key (part 11).</li>
         <li><b>Max trades per day/week</b> and <b>Daily loss limit</b>: leave blank to hide. They feed the line under the reminders.</li>
         <li><b>Starting balance</b>: turns on Balance and Return, and the equity curve shows your balance.</li>
         <li><b>Reminders</b> and <b>Mistake options</b>: one per line. Click <b>Save</b>.</li>
@@ -701,8 +751,26 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       <p class="why"><b>Why weekly:</b> single trades are noise. Patterns only show over several trades, and a week is long enough to see one and short enough to fix it quickly.</p>
     </details>
 
+    <details id="h-ai">
+      <summary>11. Fill a trade from a screenshot</summary>
+      <ol>
+        <li>Take a screenshot showing the trade: MT5's trade or history line, the position details, or the chart with entry, SL and TP lines.</li>
+        <li>On <b>Log trade</b>, tap <b>📷 Fill from screenshot</b> and choose it. On a laptop you can instead click the blue box and press <b>Ctrl+V</b>.</li>
+        <li>Wait 5 to 20 seconds. Empty boxes fill in and turn <b>yellow</b>. Check each one against the screenshot.</li>
+        <li>Fill what's still missing (checklist, plan, emotion), then <b>Save trade</b>.</li>
+      </ol>
+      <ul>
+        <li><b>Already typed some boxes?</b> They are never overwritten. If the screenshot shows something different, the app lists it and offers <b>Use the screenshot's values instead</b>.</li>
+        <li>The screenshot is saved with the trade under General screenshots.</li>
+        <li>It reads only what is visible. Anything it can't see stays empty, and the app works out R:R, risk, P&amp;L and outcome from what it found.</li>
+      </ul>
+      <h4>Setting it up (once per device)</h4>
+      <p>Screenshot reading uses Claude, Anthropic's AI, with your own API key: <b>Settings → Read trades from screenshots</b> has the steps. Each screenshot costs roughly 2 to 4 US cents from the credit on your Anthropic account. The key stays on that device only.</p>
+      <p class="why"><b>Why it can be wrong:</b> blurry or cropped pictures, or several trades on one screen, can confuse it. That's why boxes it fills are yellow, and why your own typing always wins.</p>
+    </details>
+
     <details id="h-faq">
-      <summary>11. Common problems</summary>
+      <summary>12. Common problems</summary>
       <table class="help-table">
         <tr><th>Problem</th><th>Fix</th></tr>
         <tr><td>"Please check the highlighted fields"</td><td>Scroll to the red messages: usually Outcome, Entry price, or Followed my plan.</td></tr>
@@ -711,6 +779,8 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <tr><td>No R:R calculated</td><td>Prices don't make sense for the direction. For a Long, SL must be below Entry and TP above it; for a Short, the other way round.</td></tr>
         <tr><td>Trade missing on the other device</td><td>Check the sync chip on both devices (part 7).</td></tr>
         <tr><td>A change to the app doesn't show</td><td>Refresh (laptop: F5) or close and reopen (phone), then check Settings → About.</td></tr>
+        <tr><td>P&amp;L or Risk doesn't fill itself</td><td>It needs Entry, Exit (or SL for risk) and Lot size, and a known instrument (gold, silver, forex pair). For others, set "Money per 1.00 price move" in Settings. Also check the account currency symbol is $, €, £ or ¥.</td></tr>
+        <tr><td>Screenshot reading says "out of credit" or "did not accept the key"</td><td>Add credit, or make a new key, at console.anthropic.com, then save the key again in Settings.</td></tr>
         <tr><td>"Storage full"</td><td>Export a backup, then delete old screenshots or trades you no longer need.</td></tr>
       </table>
     </details>
@@ -729,7 +799,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.7';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -756,7 +826,7 @@ const DEFAULT_REMINDERS = ['Keep risk the same on every trade.', 'Probability ov
 function defaultSettings() {
   return {
     key: 'settings', checklist: clone(PRESET_A), mistakes: DEFAULT_MISTAKES.slice(), reminders: DEFAULT_REMINDERS.slice(),
-    maxTradesDay: null, maxTradesWeek: null, dailyLossLimit: null, startingBalance: null, instrument: 'XAUUSD', currency: '$', theme: 'auto', updatedAt: null
+    maxTradesDay: null, maxTradesWeek: null, dailyLossLimit: null, startingBalance: null, instrument: 'XAUUSD', currency: '$', contractSize: null, theme: 'auto', updatedAt: null
   };
 }
 
@@ -851,6 +921,39 @@ function calcRR(direction, entry, sl, tp) {
   if (!(risk > 0) || !(reward > 0)) return null;
   const rr = Math.round((reward / risk) * 100) / 100;
   return isFinite(rr) && rr > 0 ? rr : null;
+}
+// Money estimates from prices. P&L = price move × lot × contract size, in the quote currency,
+// converted to the account currency only when that is simple (quote or base currency = account currency).
+const CURRENCY_CODES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'NZD', 'SGD', 'HKD', 'NOK', 'SEK', 'DKK', 'ZAR', 'MXN', 'TRY', 'PLN', 'CNH'];
+const SYMBOL_CODES = { '$': 'USD', 'US$': 'USD', 'USD': 'USD', '€': 'EUR', 'EUR': 'EUR', '£': 'GBP', 'GBP': 'GBP', '¥': 'JPY', 'JPY': 'JPY' };
+function contractInfo(instrument, s = settings) {
+  const sym = String(instrument || '').toUpperCase();
+  const acct = SYMBOL_CODES[s.currency] || null;
+  if (s.contractSize > 0 && sym === s.instrument) return { size: s.contractSize, quote: acct, base: null };
+  const m = /^(XAU|XAG|XPT|XPD|[A-Z]{3})([A-Z]{3})$/.exec(sym);
+  if (!m) return null;
+  const [, base, quote] = m;
+  if (!CURRENCY_CODES.includes(quote)) return null;
+  const size = { XAU: 100, XAG: 5000, XPT: 100, XPD: 100 }[base] || (CURRENCY_CODES.includes(base) ? 100000 : null);
+  return size ? { size, quote, base } : null;
+}
+function estimateMoney(instrument, priceMove, lot, refPrice, s = settings) {
+  if (![priceMove, lot].every(v => typeof v === 'number' && isFinite(v)) || !(lot > 0)) return null;
+  const info = contractInfo(instrument, s), acct = SYMBOL_CODES[s.currency];
+  if (!info || !acct) return null;
+  let amount = priceMove * lot * info.size;
+  if (info.quote === acct) { /* already in account currency */ }
+  else if (info.base === acct && refPrice > 0) amount = amount / refPrice;
+  else return null;
+  return Math.round(amount * 100) / 100;
+}
+function estimatePnl(t, s = settings) {
+  if (t.entry == null || t.exit == null) return null;
+  return estimateMoney(t.instrument, (t.direction === 'Short' ? -1 : 1) * (t.exit - t.entry), t.lot, t.exit, s);
+}
+function estimateRisk(t, s = settings) {
+  if (t.entry == null || t.sl == null || t.sl === t.entry) return null;
+  return estimateMoney(t.instrument, Math.abs(t.entry - t.sl), t.lot, t.sl, s);
 }
 function effRR(t) { return t.rr != null && t.rr > 0 ? t.rr : calcRR(t.direction, t.entry, t.sl, t.tp); }
 function rMultiple(t) {
@@ -983,6 +1086,7 @@ function normalizeTrade(r) {
   t.mistakes = Array.isArray(t.mistakes) ? t.mistakes.filter(m => typeof m === 'string') : [];
   t.emotion = typeof t.emotion === 'string' ? t.emotion : '';
   t.notes = typeof t.notes === 'string' ? t.notes : '';
+  t.pnlEstimated = !!t.pnlEstimated && t.pnl != null;
   t.checklistSnapshot = Array.isArray(t.checklistSnapshot) ? t.checklistSnapshot.map(s => ({ name: String((s && s.name) || ''), description: String((s && s.description) || '') })) : [];
   const n = t.checklistSnapshot.length;
   const conf = Array.isArray(t.checklistConfirmed) ? t.checklistConfirmed : [];
@@ -1001,7 +1105,7 @@ function normalizeSettings(s) {
   out.checklist = Array.isArray(s.checklist) && s.checklist.length ? s.checklist.slice(0, MAX_STEPS).map(x => ({ name: String(x.name || ''), description: String(x.description || '') })) : clone(PRESET_A);
   out.mistakes = Array.isArray(s.mistakes) ? s.mistakes.map(String) : DEFAULT_MISTAKES.slice();
   out.reminders = Array.isArray(s.reminders) ? s.reminders.map(String) : DEFAULT_REMINDERS.slice();
-  ['maxTradesDay', 'maxTradesWeek', 'dailyLossLimit', 'startingBalance'].forEach(k => { out[k] = numOrNull(out[k]); });
+  ['maxTradesDay', 'maxTradesWeek', 'dailyLossLimit', 'startingBalance', 'contractSize'].forEach(k => { out[k] = numOrNull(out[k]); });
   if (!['light', 'dark', 'auto'].includes(out.theme)) out.theme = 'auto';
   out.instrument = String(out.instrument || '').trim().toUpperCase() || 'XAUUSD';
   out.currency = String(out.currency || '').trim().slice(0, 4) || '$';
@@ -1150,7 +1254,8 @@ let draft = null;
 const F = id => $('f-' + id);
 function newDraft(checklist) {
   return { editingId: null, original: null, checklist: clone(checklist || settings.checklist), confirmed: [], stepShots: [], generalShots: [],
-    followedPlan: null, mistakes: new Set(), sessionTouched: false, dirty: false, shotTarget: -1 };
+    followedPlan: null, mistakes: new Set(), sessionTouched: false, dirty: false, shotTarget: -1,
+    auto: new Set(), aiFilled: new Set(), touched: new Set() };  // auto: values the app worked out; aiFilled: values read from a screenshot
 }
 function resetForm() {
   // Free memory of unsaved images.
@@ -1163,6 +1268,8 @@ function resetForm() {
   F('direction').value = 'Long'; F('outcome').value = '';
   ['entry', 'exit', 'sl', 'tp', 'lot', 'risk', 'pnl', 'rr', 'notes'].forEach(k => { F(k).value = ''; });
   F('grade').value = ''; F('emotion').value = '';
+  $('aiStatus').replaceChildren();
+  recomputeAuto();
   renderFormDynamic();
   clearFormErrors(); $('saveError').classList.add('hidden');
   $('editNote').classList.add('hidden'); $('formTitle').textContent = 'Log a trade';
@@ -1179,6 +1286,7 @@ function fillFormFromTrade(t, { duplicate = false } = {}) {
   F('entry').value = t.entry ?? ''; F('sl').value = t.sl ?? ''; F('tp').value = t.tp ?? '';
   F('lot').value = t.lot ?? ''; F('risk').value = t.risk ?? ''; F('rr').value = t.rr ?? ''; F('grade').value = t.grade;
   draft.sessionTouched = true;
+  draft.touched = new Set(['instrument', 'direction', 'date', 'time']); // values from a saved trade count as typed
   if (duplicate) {
     ['exit', 'pnl', 'notes'].forEach(k => { F(k).value = ''; });
     F('outcome').value = ''; F('emotion').value = '';
@@ -1198,6 +1306,9 @@ function fillFormFromTrade(t, { duplicate = false } = {}) {
     $('formTitle').textContent = 'Edit trade'; $('cancelEdit').textContent = 'Cancel edit';
   }
   $('editNote').classList.remove('hidden');
+  if (!duplicate && t.pnlEstimated) draft.auto.add('pnl');
+  $('aiStatus').replaceChildren();
+  recomputeAuto();
   clearFormErrors(); $('saveError').classList.add('hidden');
   renderFormDynamic();
   draft.dirty = duplicate; // a copy is unsaved work
@@ -1246,6 +1357,7 @@ function setShotTarget(i) {
   draft.shotTarget = i;
   document.querySelectorAll('#f-checklist .step').forEach(s => s.classList.toggle('shot-target', Number(s.dataset.step) === i));
   $('generalBox').classList.toggle('shot-target', i === -1);
+  $('aiBox').classList.toggle('shot-target', i === 'ai');
 }
 function uploadArea(stepIndex) {
   const input = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', multiple: true });
@@ -1277,14 +1389,40 @@ function removeDraftShot(stepIndex, j) {
   draft.dirty = true; renderFormDynamic();
 }
 
+const AUTO_FIELDS = ['instrument', 'direction', 'date', 'time', 'entry', 'exit', 'sl', 'tp', 'lot', 'risk', 'pnl', 'rr', 'outcome'];
+function markFields() {
+  AUTO_FIELDS.forEach(k => { F(k).classList.toggle('auto', draft.auto.has(k)); F(k).classList.toggle('ai', draft.aiFilled.has(k)); });
+}
+// A box may be filled by the app when it is empty or still holds a value the app put there.
+function canAutoFill(k) { return draft.auto.has(k) || F(k).value.trim() === ''; }
+function setAuto(k, value) {
+  if (!canAutoFill(k)) return;
+  if (value == null) { if (draft.auto.has(k)) { F(k).value = ''; draft.auto.delete(k); } return; }
+  F(k).value = String(value); draft.auto.add(k);
+}
+// Work out R:R, risk, P&L and outcome from the prices typed so far.
+function recomputeAuto() {
+  const t = { instrument: F('instrument').value.trim().toUpperCase(), direction: F('direction').value,
+    entry: numOrNull(F('entry').value), exit: numOrNull(F('exit').value), sl: numOrNull(F('sl').value), tp: numOrNull(F('tp').value), lot: numOrNull(F('lot').value) };
+  const rr = calcRR(t.direction, t.entry, t.sl, t.tp);
+  setAuto('rr', rr == null ? null : rr.toFixed(2));
+  setAuto('risk', estimateRisk(t));
+  setAuto('pnl', estimatePnl(t));
+  const pnl = numOrNull(F('pnl').value);
+  setAuto('outcome', pnl == null || t.exit == null && !draft.aiFilled.has('pnl') ? null : pnl > 0 ? 'Win' : pnl < 0 ? 'Loss' : 'Breakeven');
+  markFields();
+}
 function updateHints() {
   const dir = F('direction').value;
   const rr = calcRR(dir, parseNum(F('entry').value), parseNum(F('sl').value), parseNum(F('tp').value));
   const manual = parseNum(F('rr').value);
-  $('rrHint').textContent = manual != null ? '' : rr != null ? `Auto from prices: ${rrFmt(rr)}` : 'Fill entry, SL and TP to calculate.';
+  $('rrHint').textContent = draft.auto.has('rr') ? 'Worked out from Entry, SL and TP.' : manual != null ? '' : rr != null ? `From prices: ${rrFmt(rr)}` : 'Fills in once Entry, SL and TP are typed.';
+  const instr = F('instrument').value.trim().toUpperCase();
+  $('riskHint').textContent = draft.auto.has('risk') ? 'Estimated from Entry, SL and lot size.' : (!contractInfo(instr) && F('risk').value === '' && F('lot').value ? `No automatic estimate for ${instr || 'this instrument'}: type it, or set the money per price move in Settings.` : '');
   const pnl = parseNum(F('pnl').value), risk = parseNum(F('risk').value), outcome = F('outcome').value;
   let h = '';
-  if (pnl != null && isFinite(pnl) && risk > 0) h = `Result: ${rFmt(pnl / risk)}`;
+  if (draft.auto.has('pnl')) h = 'Estimated from prices × lot. MT5 adds commission and swap, so type MT5\'s figure over it if it differs.';
+  if (pnl != null && isFinite(pnl) && risk > 0) h = (h ? h + ' · ' : '') + `Result: ${rFmt(pnl / risk)}`;
   if (outcome === 'Loss' && pnl > 0) h = (h ? h + ' · ' : '') + 'A loss is usually negative: tap ± to switch.';
   if (outcome === 'Win' && pnl < 0) h = (h ? h + ' · ' : '') + 'A win is usually positive: tap ± to switch.';
   $('pnlHint').textContent = h;
@@ -1347,6 +1485,8 @@ async function onSave(e) {
     deleted: false,
     schemaVersion: SCHEMA_VERSION,
     followedPlan: draft.followedPlan,
+    rr: draft.auto.has('rr') ? null : v.rr,              // auto R:R stays calculated, so it follows later price edits
+    pnlEstimated: draft.auto.has('pnl') && v.pnl != null,
     mistakes: [...draft.mistakes],
     checklistSnapshot: clone(draft.checklist),
     checklistConfirmed: draft.confirmed.slice(),
@@ -1634,7 +1774,7 @@ function tradeCard(t) {
       el('span', { class: 'badge session' }, t.session),
       el('span', { class: 'badge ' + t.outcome }, t.outcome),
       t.grade ? el('span', { class: 'badge' }, 'Grade ' + t.grade) : null,
-      el('span', { class: 'pnl ' + (closed ? signClass(t.pnl || 0) : '') }, closed ? money(t.pnl || 0) : (t.pnl != null ? money(t.pnl) : 'Open'), r != null ? el('span', { class: 'r' }, rFmt(r)) : null)),
+      el('span', { class: 'pnl ' + (closed ? signClass(t.pnl || 0) : '') }, closed ? money(t.pnl || 0) : (t.pnl != null ? money(t.pnl) : 'Open'), t.pnlEstimated ? el('span', { class: 'est', title: 'Estimated from prices, not copied from MT5' }, ' est.') : null, r != null ? el('span', { class: 'r' }, rFmt(r)) : null)),
     el('div', { class: 'details' },
       d('Entry', price(t.entry)), d('Exit', price(t.exit)), d('Stop loss', price(t.sl)), d('Take profit', price(t.tp)),
       d('R:R', rr == null ? '—' : rrFmt(rr) + (t.rr == null ? ' (auto)' : '')), d('Lot size', t.lot == null ? '—' : String(t.lot)),
@@ -1734,7 +1874,7 @@ async function applyChecklist(list, what) {
 }
 function renderLimits() {
   $('s-maxDay').value = settings.maxTradesDay ?? ''; $('s-maxWeek').value = settings.maxTradesWeek ?? '';
-  $('s-instrument').value = settings.instrument; $('s-currency').value = settings.currency;
+  $('s-instrument').value = settings.instrument; $('s-currency').value = settings.currency; $('s-contract').value = settings.contractSize ?? '';
   document.querySelectorAll('.cur').forEach(n => { n.textContent = settings.currency; }); $('subtitle').textContent = `${settings.instrument} · Track, review, improve`;
   $('s-lossLimit').value = settings.dailyLossLimit ?? ''; $('s-startBal').value = settings.startingBalance ?? '';
   $('s-reminders').value = settings.reminders.join('\n'); $('s-mistakes').value = settings.mistakes.join('\n');
@@ -1752,6 +1892,9 @@ async function saveLimits() {
   const lines = id => [...new Set($(id).value.split('\n').map(s => s.trim()).filter(Boolean))];
   vals.instrument = $('s-instrument').value.trim().toUpperCase() || 'XAUUSD';
   vals.currency = $('s-currency').value.trim().slice(0, 4) || '$';
+  const cs = parseNum($('s-contract').value);
+  if (Number.isNaN(cs) || (cs != null && cs <= 0)) { $('limitsErr').textContent = 'Money per 1.00 price move: enter a number above 0, or leave blank.'; return; }
+  vals.contractSize = cs;
   vals.reminders = lines('s-reminders'); vals.mistakes = lines('s-mistakes');
   try { await saveSettings(vals); } catch (err) { toast('Not saved. ' + storageAdvice(err), true); return; }
   renderLimits(); if (!draft.dirty && !draft.editingId) resetForm(); else renderFormDynamic(); refreshAll(); toast('Settings saved');
@@ -1837,7 +1980,7 @@ function buildCsv(list) {
   const cols = [
     ['Date', t => t.date, true], ['Time', t => t.time, true], ['Instrument', t => t.instrument, true], ['Session', t => t.session, true],
     ['Direction', t => t.direction, true], ['Entry', t => t.entry], ['Exit', t => t.exit], ['Stop loss', t => t.sl], ['Take profit', t => t.tp],
-    ['Lot size', t => t.lot], [`Risk (${settings.currency})`, t => t.risk], [`P&L (${settings.currency})`, t => t.pnl], ['Result (R)', t => { const r = rMultiple(t); return r == null ? null : Math.round(r * 100) / 100; }],
+    ['Lot size', t => t.lot], [`Risk (${settings.currency})`, t => t.risk], [`P&L (${settings.currency})`, t => t.pnl], ['P&L estimated', t => t.pnlEstimated ? 'Yes' : 'No', true], ['Result (R)', t => { const r = rMultiple(t); return r == null ? null : Math.round(r * 100) / 100; }],
     ['R:R', t => effRR(t)], ['Outcome', t => t.outcome, true], ['Grade', t => t.grade, true],
     ['Followed plan', t => t.followedPlan === true ? 'Yes' : t.followedPlan === false ? 'No' : '', true],
     ['Checklist', t => `${t.checklistConfirmed.filter(Boolean).length}/${t.checklistSnapshot.length} steps`, true],
@@ -1951,6 +2094,160 @@ async function wipeAll() {
   catch (err) { toast('Not deleted. ' + storageAdvice(err), true); return; }
   urlCache.forEach(u => URL.revokeObjectURL(u)); urlCache.clear(); pendingBlobs.clear();
   trades = []; resetForm(); refreshAll(); toast('All trades deleted');
+}
+
+/* =========================================================================
+   Read a trade from a screenshot with Claude (Anthropic API, called
+   straight from the browser with the trader's own key, kept on this device).
+   The app only fills empty boxes; anything the trader typed wins.
+   ========================================================================= */
+const AI_MODEL = 'claude-opus-5-5';
+const AI_FIELDS = [
+  ['instrument', 'Instrument'], ['direction', 'Direction'], ['date', 'Date'], ['time', 'Time'],
+  ['entry', 'Entry price'], ['exit', 'Exit price'], ['sl', 'Stop loss'], ['tp', 'Take profit'], ['lot', 'Lot size'], ['pnl', 'P&L']
+];
+const nullable = type => ({ anyOf: [{ type }, { type: 'null' }] });
+const AI_SCHEMA = {
+  type: 'object', additionalProperties: false,
+  required: ['instrument', 'direction', 'date', 'time', 'entry', 'exit', 'sl', 'tp', 'lot', 'pnl', 'note'],
+  properties: {
+    instrument: nullable('string'),
+    direction: { anyOf: [{ type: 'string', enum: ['Long', 'Short'] }, { type: 'null' }] },
+    date: nullable('string'), time: nullable('string'),
+    entry: nullable('number'), exit: nullable('number'), sl: nullable('number'), tp: nullable('number'),
+    lot: nullable('number'), pnl: nullable('number'),
+    note: { type: 'string' }
+  }
+};
+const AI_PROMPT = `This is a screenshot from a trading platform, usually MetaTrader 5 on a phone or computer, or a chart. Read the details of ONE trade and fill in the JSON.
+Rules:
+- Use only values you can actually see. If a value is not visible or you are not sure, use null. Never guess or calculate a value.
+- Prices: copy exactly as shown, with every decimal.
+- direction: "Long" for a buy, "Short" for a sell.
+- entry = open price; exit = close price (null if the trade is still open); sl = stop loss; tp = take profit; lot = volume in lots.
+- pnl = the trade's profit or loss in the account currency as shown, negative for a loss. null if not shown.
+- instrument = the symbol, e.g. XAUUSD, without broker suffixes such as .m, .pro or a trailing #.
+- date = the open date as YYYY-MM-DD; time = the open time as HH:MM in 24-hour format. null if not shown.
+- If several trades are visible, use the selected one or else the most recent, and say which in note.
+- note: one short, plain sentence for the trader about anything unclear, or an empty string if everything was clear.`;
+
+const aiReader = (() => {
+  let cfg = null; // {key:'ai', apiKey}
+  const hasKey = () => !!(cfg && cfg.apiKey);
+  async function load() { cfg = (await store.get('meta', 'ai')) || null; render(); }
+  function render() {
+    $('aiSetup').classList.toggle('hidden', hasKey());
+    $('aiOn').classList.toggle('hidden', !hasKey());
+  }
+  async function saveKey(raw) {
+    const k = String(raw || '').trim();
+    if (!/^sk-ant-\S{20,}$/.test(k)) { $('aiErr').textContent = 'That does not look like a Claude API key. It starts with "sk-ant-" and is long: copy it again from console.anthropic.com → API keys.'; return; }
+    try { await store.put('meta', { key: 'ai', apiKey: k }); } catch (err) { $('aiErr').textContent = 'Not saved. ' + storageAdvice(err); return; }
+    cfg = { key: 'ai', apiKey: k }; $('s-aiKey').value = ''; render(); toast('Claude API key saved on this device');
+  }
+  async function removeKey() { await store.delete('meta', 'ai'); cfg = null; render(); toast('Key removed from this device'); }
+
+  // Send one image; returns the parsed fields or throws an Error with a plain-English message.
+  async function read(blob) {
+    if (!hasKey()) throw new Error('NO_KEY');
+    const body = {
+      model: AI_MODEL, max_tokens: 16000,
+      output_config: { effort: 'medium', format: { type: 'json_schema', schema: AI_SCHEMA } },
+      fallbacks: 'default', // if Claude Opus 5.5 declines, the API retries on its recommended fallback model
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: blob.type || 'image/jpeg', data: await blobToBase64(blob) } },
+        { type: 'text', text: AI_PROMPT }
+      ] }]
+    };
+    let res;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', cache: 'no-store',
+        headers: {
+          'content-type': 'application/json', 'x-api-key': cfg.apiKey, 'anthropic-version': '2026-10-21',
+          'anthropic-beta': 'server-side-fallback-2026-07-01',
+          'anthropic-dangerous-direct-browser-access': 'true' // allows the call from a web page; the key stays on this device
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (e) { throw new Error('No internet connection. Fill the boxes by hand, or try again when you are online.'); }
+    let data = {}; try { data = await res.json(); } catch (e) {}
+    if (!res.ok) {
+      const m = (data.error && data.error.message) || res.statusText || '';
+      if (res.status === 401) throw new Error('Claude did not accept the API key. Make a new key at console.anthropic.com → API keys and save it in Settings.');
+      if (/credit|balance|billing/i.test(m)) throw new Error('Your Anthropic account is out of credit. Add credit at console.anthropic.com → Billing.');
+      if (res.status === 429 || res.status === 529 || res.status >= 500) throw new Error('Claude is busy right now. Wait a minute and try again.');
+      if (res.status === 413) throw new Error('This picture is too large. Crop it to the trade and try again.');
+      throw new Error(`Claude could not read it (error ${res.status}: ${m}).`);
+    }
+    if (data.stop_reason === 'refusal') throw new Error('Claude declined to read this picture. Fill the boxes by hand.');
+    if (data.stop_reason === 'max_tokens') throw new Error('Claude stopped before finishing. Try again, or crop the picture to the trade.');
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    try { return JSON.parse(text); } catch (e) { throw new Error('Claude replied in an unexpected way. Try again.'); }
+  }
+  return { load, render, read, saveKey, removeKey, hasKey };
+})();
+
+let aiBusy = false;
+async function aiReadFile(file) {
+  if (aiBusy) return;
+  setShotTarget('ai');
+  const status = $('aiStatus');
+  if (!aiReader.hasKey()) {
+    status.replaceChildren(el('div', null, 'To read screenshots, first add your Claude API key: ',
+      el('button', { type: 'button', class: 'linkbtn', onclick: () => { showTab('settings'); $('aiCard').scrollIntoView({ block: 'start' }); } }, 'Settings → Read trades from screenshots')));
+    return;
+  }
+  let blob;
+  try { blob = await compressImage(file); } catch (e) { status.replaceChildren(el('div', { style: 'color:var(--red)' }, e.message)); return; }
+  aiBusy = true; $('aiPick').classList.add('disabled');
+  status.replaceChildren(el('div', null, 'Reading the screenshot… this takes about 5 to 20 seconds.'));
+  try {
+    const r = await aiReader.read(blob);
+    applyAiResult(r, blob);
+  } catch (e) {
+    status.replaceChildren(el('div', { style: 'color:var(--red)' }, e.message));
+  } finally { aiBusy = false; $('aiPick').classList.remove('disabled'); }
+}
+
+// Fill empty boxes from the screenshot; list any box where the screenshot disagrees with what was typed.
+function applyAiResult(r, blob) {
+  const clean = {}, filled = [], conflicts = [];
+  if (r.instrument) clean.instrument = String(r.instrument).toUpperCase().replace(/[^A-Z0-9]+$/, '').replace(/\.[A-Z0-9]+$/, '');
+  if (r.direction === 'Long' || r.direction === 'Short') clean.direction = r.direction;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(r.date || '')) clean.date = r.date;
+  if (/^\d{1,2}:\d{2}/.test(r.time || '')) clean.time = r.time.slice(0, 5).padStart(5, '0');
+  ['entry', 'exit', 'sl', 'tp', 'lot', 'pnl'].forEach(k => { if (typeof r[k] === 'number' && isFinite(r[k])) clean[k] = r[k]; });
+  const same = (k, a, b) => (typeof b === 'number' ? numOrNull(a) === b : String(a).trim().toUpperCase() === String(b).toUpperCase());
+  for (const [k, label] of AI_FIELDS) {
+    if (!(k in clean)) continue;
+    const box = F(k), mine = box.value;
+    // Direction and date always have a value; treat the untouched defaults as empty.
+    const untouched = ['instrument', 'direction', 'date'].includes(k) && !draft.touched.has(k);
+    if (mine.trim() === '' || draft.auto.has(k) || draft.aiFilled.has(k) || untouched) {
+      box.value = String(clean[k]); draft.auto.delete(k); draft.aiFilled.add(k); filled.push(label);
+    } else if (!same(k, mine, clean[k])) conflicts.push({ k, label, mine, theirs: String(clean[k]) });
+  }
+  if (draft.aiFilled.has('time') && !draft.sessionTouched) { const s = sessionFromTime(F('time').value); if (s) F('session').value = s; }
+  // Keep the screenshot with the trade.
+  const id = uuid(); pendingBlobs.set(id, blob); draft.generalShots.push(id);
+  draft.dirty = true;
+  recomputeAuto(); renderFormDynamic();
+  const status = $('aiStatus'); status.replaceChildren();
+  status.append(el('div', { style: 'font-weight:600' }, filled.length
+    ? `Filled ${filled.length} box${filled.length === 1 ? '' : 'es'} from the screenshot (highlighted in yellow): ${filled.join(', ')}. Please check them.`
+    : 'Nothing new to fill: the screenshot matched what you typed, or the details were not visible.'));
+  if (conflicts.length) {
+    status.append(el('div', { style: 'margin-top:6px' }, 'The screenshot shows something different from what you typed. Your values were kept:'),
+      el('ul', null, conflicts.map(c => el('li', null, `${c.label}: you typed ${c.mine}, screenshot shows ${c.theirs}`))),
+      el('button', { type: 'button', class: 'btn small', onclick: e => {
+        conflicts.forEach(c => { F(c.k).value = c.theirs; draft.auto.delete(c.k); draft.aiFilled.add(c.k); });
+        recomputeAuto(); updateHints(); e.target.replaceWith(el('span', { class: 'small' }, 'Screenshot values used.'));
+      } }, 'Use the screenshot\'s values instead'));
+  }
+  if (r.note) status.append(el('div', { class: 'muted', style: 'margin-top:6px' }, 'Claude: ' + r.note));
+  status.append(el('div', { class: 'muted', style: 'margin-top:4px' }, 'The screenshot was added under General screenshots.'));
+  updateHints();
 }
 
 /* =========================================================================
@@ -2241,8 +2538,14 @@ function wire() {
   document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.goto)));
   // Form
   $('tradeForm').addEventListener('submit', onSave);
-  $('tradeForm').addEventListener('input', () => { draft.dirty = true; updateHints(); });
-  $('tradeForm').addEventListener('change', () => { draft.dirty = true; updateHints(); });
+  // Typing in a box makes it yours: the app stops filling it.
+  const onFormEdit = e => {
+    const k = (e.target.id || '').replace(/^f-/, '');
+    if (AUTO_FIELDS.includes(k)) { draft.auto.delete(k); draft.aiFilled.delete(k); draft.touched.add(k); }
+    draft.dirty = true; recomputeAuto(); updateHints();
+  };
+  $('tradeForm').addEventListener('input', onFormEdit);
+  $('tradeForm').addEventListener('change', onFormEdit);
   F('session').addEventListener('change', () => { draft.sessionTouched = true; });
   F('time').addEventListener('change', () => { if (!draft.sessionTouched) { const s = sessionFromTime(F('time').value); if (s) F('session').value = s; } });
   $('f-plan').addEventListener('click', e => {
@@ -2253,19 +2556,27 @@ function wire() {
     const n = parseNum(F('pnl').value);
     if (n == null || Number.isNaN(n)) { F('pnl').value = F('pnl').value.trim().startsWith('-') ? F('pnl').value.trim().slice(1) : '-' + F('pnl').value.trim(); }
     else F('pnl').value = String(-n);
-    draft.dirty = true; updateHints(); F('pnl').focus();
+    draft.auto.delete('pnl'); draft.aiFilled.delete('pnl');
+    draft.dirty = true; recomputeAuto(); updateHints(); F('pnl').focus();
   });
   $('cancelEdit').addEventListener('click', () => {
     if (draft.dirty && !confirm(draft.editingId ? 'Cancel editing? Your changes will not be saved.' : 'Clear the form? What you typed will be lost.')) return;
     resetForm();
   });
   $('generalBox').addEventListener('pointerdown', () => setShotTarget(-1));
+  $('aiBox').addEventListener('pointerdown', () => setShotTarget('ai'));
+  $('aiFile').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) aiReadFile(f); });
+  $('aiKeyShow').addEventListener('click', () => { const t = $('s-aiKey'); const show = t.type === 'password'; t.type = show ? 'text' : 'password'; $('aiKeyShow').textContent = show ? 'Hide' : 'Show'; });
+  $('s-aiKey').addEventListener('input', () => { $('aiErr').textContent = ''; });
+  $('aiSave').addEventListener('click', () => aiReader.saveKey($('s-aiKey').value));
+  $('aiRemove').addEventListener('click', () => { if (confirm('Remove the Claude API key from this device?')) aiReader.removeKey(); });
   // Paste screenshots (laptop): goes to the highlighted step or General.
   document.addEventListener('paste', e => {
     if (currentTab !== 'form' || !e.clipboardData) return;
     const files = [...e.clipboardData.items].filter(i => i.kind === 'file' && /^image\//.test(i.type)).map(i => i.getAsFile()).filter(Boolean);
     if (!files.length) return;
-    e.preventDefault(); addFiles(draft.shotTarget, files);
+    e.preventDefault();
+    if (draft.shotTarget === 'ai') aiReadFile(files[0]); else addFiles(draft.shotTarget, files);
   });
   // Log filters
   ['flt-outcome', 'flt-session', 'flt-plan', 'flt-instrument', 'flt-range'].forEach(id => $(id).addEventListener('change', renderLog));
@@ -2353,6 +2664,7 @@ async function init() {
   ckWork = clone(settings.checklist); renderCkEditor(); renderLimits();
   resetForm();
   refreshAll();
+  try { await aiReader.load(); } catch (e) { /* screenshot reading is optional */ }
   try { await sync.load(); if (sync.connected() && sync.auto) sync.run(); } catch (e) { /* sync is optional */ }
   // Ask the browser to protect our data from automatic clean-up.
   try { if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch (e) {}
