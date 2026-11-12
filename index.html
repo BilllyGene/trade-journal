@@ -243,6 +243,23 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 .sw-auto { background: var(--blue-bg); } .sw-ai { background: var(--amber-bg); border-color: var(--amber); }
 .est { font-size: 11.5px; font-weight: 600; color: var(--muted); }
 
+/* Password lock */
+body.locked .wrap, body.locked #toast { display: none !important; }
+#lockScreen, #recModal { position: fixed; inset: 0; z-index: 200; background: var(--bg); overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 8vh 12px 24px; }
+#recModal { z-index: 210; background: rgba(0,0,0,.55); }
+#lockScreen.hidden, #recModal.hidden { display: none; }
+.lock-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; width: 100%; max-width: 380px; box-shadow: 0 6px 24px rgba(0,0,0,.08); }
+.lock-card h1 { text-align: center; margin: 4px 0 12px; }
+.lock-card h3 { text-transform: none; letter-spacing: 0; color: var(--text); font-size: 15px; margin-top: 0; }
+.lock-card input[type=text], .lock-card input[type=password] { margin-bottom: 8px; }
+.lock-card .inline-input input { margin-bottom: 0; }
+.lock-icon { font-size: 34px; text-align: center; }
+.lock-wide { width: 100%; margin-top: 8px; }
+.lock-links { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.lost-box { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; font-size: 14px; }
+.rec-code { font: 600 22px/1.3 Consolas, "Courier New", monospace; letter-spacing: .06em; text-align: center; background: var(--grey-bg); border-radius: 10px; padding: 14px 8px; margin: 10px 0; user-select: all; overflow-wrap: anywhere; }
+.lock-auth { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 10px; }
+
 /* In-app guide */
 .help-btn { color: var(--blue); border-color: var(--blue); }
 .help-btn b { font-weight: 800; }
@@ -294,6 +311,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
     <div style="flex:1;min-width:0"><h1>Trade Journal</h1><p class="sub" id="subtitle">XAUUSD · Track, review, improve</p></div>
     <button type="button" id="syncChip" class="sync-chip hidden" title="Sync between devices"></button>
     <button type="button" id="helpBtn" class="sync-chip help-btn" title="How to use the app" aria-label="Guide: how to use the app"><b>?</b><span class="help-word">Guide</span></button>
+    <button type="button" id="lockBtn" class="sync-chip help-btn hidden" title="Lock the journal now" aria-label="Lock the journal now">🔒</button>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -487,6 +505,43 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       <div class="row" style="margin-top:8px"><span class="spacer"></span><button type="button" class="btn primary small" id="saveLimits">Save</button></div>
     </div>
 
+    <div class="card" id="lockCard">
+      <h2>Password lock</h2>
+      <div id="lockOff">
+        <p class="small" style="margin-top:0">Locks the journal on this device with a password, like a banking app. It opens to a lock screen and locks again after you've been away. Set it on each device you use; you can use the same password on each.</p>
+        <div class="grid2">
+          <div class="field"><label class="lbl" for="s-lockPw1">New password</label><input type="password" id="s-lockPw1" autocomplete="new-password" placeholder="at least 6 characters"></div>
+          <div class="field"><label class="lbl" for="s-lockPw2">Repeat password</label><input type="password" id="s-lockPw2" autocomplete="new-password"></div>
+          <div class="field full"><label class="lbl" for="s-lockHint">Hint (optional)</label><input type="text" id="s-lockHint" maxlength="80" placeholder="a clue only you understand"><div class="hint">Shown on the lock screen to anyone who asks, so never write the password itself.</div></div>
+        </div>
+        <div class="err" id="lockSetErr"></div>
+        <div class="row" style="margin-top:8px"><button type="button" class="btn primary small" id="lockSet">Set password</button></div>
+      </div>
+      <div id="lockOn" class="hidden">
+        <div class="sync-status ok"><i></i>Password lock is on for this device</div>
+        <div class="field" style="max-width:320px"><label class="lbl" for="s-lockAfter">Lock again when I've been away for</label>
+          <select id="s-lockAfter"><option value="0">Any time I leave the app</option><option value="1">1 minute</option><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="60">1 hour</option></select></div>
+        <div class="row" style="margin-top:10px">
+          <button type="button" class="btn small" id="lockNow">Lock now</button>
+          <button type="button" class="btn small" id="lockChangeOpen">Change password</button>
+          <button type="button" class="btn small" id="lockNewCodeOpen">New recovery code</button>
+          <button type="button" class="btn small danger" id="lockOffOpen">Turn off lock</button>
+        </div>
+        <div id="lockAuthBox" class="hidden lock-auth">
+          <div class="field" id="lockCurWrap"><label class="lbl" for="s-lockCur">Current password</label><input type="password" id="s-lockCur" autocomplete="current-password"></div>
+          <div id="lockNewWrap" class="grid2 hidden" style="margin-top:8px">
+            <div class="field"><label class="lbl" for="s-lockNew1">New password</label><input type="password" id="s-lockNew1" autocomplete="new-password" placeholder="at least 6 characters"></div>
+            <div class="field"><label class="lbl" for="s-lockNew2">Repeat new password</label><input type="password" id="s-lockNew2" autocomplete="new-password"></div>
+            <div class="field full"><label class="lbl" for="s-lockNewHint">Hint (optional)</label><input type="text" id="s-lockNewHint" maxlength="80"></div>
+          </div>
+          <div class="err" id="lockAuthErr"></div>
+          <div class="row" style="margin-top:8px"><button type="button" class="btn primary small" id="lockAuthGo">Confirm</button><button type="button" class="btn small" id="lockAuthCancel">Cancel</button></div>
+        </div>
+        <p class="hint">Forgot it? Use your recovery code on the lock screen ("Forgot password?"). The password and recovery code are kept only on this device: they are never synced or put in backups.</p>
+      </div>
+      <p class="hint hidden" id="lockUnsupported">This browser can't create a password lock here. Open the journal from its web address (https), not as a file.</p>
+    </div>
+
     <div class="card" id="aiCard">
       <h2>Read trades from screenshots</h2>
       <p class="small" style="margin-top:0">The <b>📷 Fill from screenshot</b> button on Log trade sends the picture to Claude (Anthropic's AI), which reads the prices and fills the form for you to check. It needs your own Claude API key. Each screenshot costs roughly 2 to 4 US cents, paid from credit on your Anthropic account.</p>
@@ -570,6 +625,56 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
   </section>
 </div>
 
+<div id="lockScreen" class="hidden" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+  <div class="lock-card">
+    <div class="lock-icon" aria-hidden="true">🔒</div>
+    <h1 id="lockTitle">Trade Journal</h1>
+    <form id="lockForm" novalidate>
+      <p class="muted" style="margin-top:0">Enter your password to open the journal.</p>
+      <div class="inline-input"><input type="password" id="lockPw" autocomplete="current-password" placeholder="Password" aria-label="Password"><button type="button" class="icon-btn" id="lockPwShow" style="padding:0 10px">Show</button></div>
+      <div class="err" id="lockErr" role="alert"></div>
+      <button type="submit" class="btn primary lock-wide" id="lockGo">Unlock</button>
+      <div class="lock-links">
+        <button type="button" class="linkbtn" id="lockHintBtn">Show my hint</button>
+        <button type="button" class="linkbtn" id="lockForgot">Forgot password?</button>
+      </div>
+      <div class="hint" id="lockHint"></div>
+    </form>
+    <form id="recoverForm" class="hidden" novalidate>
+      <h3>Set a new password with your recovery code</h3>
+      <p class="small muted" style="margin-top:0">The code you saved when you set the password, like <code>ABCD-EFGH-JKLM-NPQR</code>.</p>
+      <input type="text" id="recCode" placeholder="Recovery code" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Recovery code">
+      <input type="password" id="recPw1" placeholder="New password (at least 6 characters)" autocomplete="new-password" aria-label="New password">
+      <input type="password" id="recPw2" placeholder="Repeat the new password" autocomplete="new-password" aria-label="Repeat the new password">
+      <div class="err" id="recErr" role="alert"></div>
+      <button type="submit" class="btn primary lock-wide">Set new password and open</button>
+      <div class="lock-links">
+        <button type="button" class="linkbtn" id="recBack">← Back to password</button>
+        <button type="button" class="linkbtn" id="lockLostAll">Lost the recovery code too?</button>
+      </div>
+      <div id="lostAllBox" class="hidden lost-box">
+        <p><b>Last resort: start this device afresh.</b> This erases the journal <b>on this device only</b> (trades, screenshots, the sync and screenshot-reading keys) and removes the lock.</p>
+        <p>Your trades are not lost if you use <b>sync</b> (they download again after you reconnect sync with a new GitHub token) or have a <b>backup file</b> (Settings → Import).</p>
+        <input type="text" id="eraseConfirm" placeholder="Type ERASE to confirm" autocapitalize="characters" autocomplete="off" aria-label="Type ERASE to confirm">
+        <button type="button" class="btn danger lock-wide" id="eraseGo">Erase this device and remove the lock</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="recModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="recTitle">
+  <div class="lock-card">
+    <h2 id="recTitle">Save your recovery code</h2>
+    <p class="small" style="margin-top:0">If you ever forget your password, this code lets you set a new one. <b>It is shown only now.</b></p>
+    <div class="rec-code" id="recCodeShow"></div>
+    <div class="row" style="justify-content:center">
+      <button type="button" class="btn small" id="recCopy">Copy</button>
+      <button type="button" class="btn small" id="recDownload">Save as a file</button>
+    </div>
+    <p class="hint">Write it on paper, or keep it somewhere that isn't this device, e.g. a note in your email. Anyone with this code and this device could reset the password.</p>
+    <label class="check"><input type="checkbox" id="recSaved"><span>I have saved my recovery code</span></label>
+    <button type="button" class="btn primary lock-wide" id="recDone" disabled>Done</button>
+  </div>
+</div>
 <div id="help" class="hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
   <div class="help-bar">
     <strong id="helpTitle">Guide</strong>
@@ -693,6 +798,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
         <li><b>Main instrument</b> and <b>Account currency symbol</b>: what you trade most, and the money symbol used everywhere.</li>
         <li><b>Money per 1.00 price move for 1 lot</b>: only needed if the automatic P&amp;L/Risk estimate is missing or wrong for your main instrument (e.g. indices).</li>
         <li><b>Read trades from screenshots</b>: where you save your Claude API key (part 11).</li>
+        <li><b>Password lock</b>: lock the journal on this device with a password (part 13).</li>
         <li><b>Max trades per day/week</b> and <b>Daily loss limit</b>: leave blank to hide. They feed the line under the reminders.</li>
         <li><b>Starting balance</b>: turns on Balance and Return, and the equity curve shows your balance.</li>
         <li><b>Reminders</b> and <b>Mistake options</b>: one per line. Click <b>Save</b>.</li>
@@ -769,6 +875,32 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
       <p class="why"><b>Why it can be wrong:</b> blurry or cropped pictures, or several trades on one screen, can confuse it. That's why boxes it fills are yellow, and why your own typing always wins.</p>
     </details>
 
+    <details id="h-lock">
+      <summary>13. Password lock and getting back in</summary>
+      <p><b>What it protects:</b> anyone using <i>your</i> phone or laptop. People you send the link to never see your trades anyway: trades live only in your browser and your private sync storage, so they get an empty journal of their own.</p>
+      <h4>Turn it on</h4>
+      <ol>
+        <li><b>Settings → Password lock</b>: type a password twice (at least 6 characters), add a hint if you like, then <b>Set password</b>.</li>
+        <li>A <b>recovery code</b> appears, like <code>ABCD-EFGH-JKLM-NPQR</code>. Save it: <b>Copy</b> it into a note in your email, <b>Save as a file</b>, or write it on paper. It's shown only once.</li>
+        <li>Do the same on your other devices. Each device has its own lock; you can use the same password on each.</li>
+      </ol>
+      <h4>Every day</h4>
+      <ul>
+        <li>The journal opens to the lock screen. Enter the password to see anything.</li>
+        <li>It locks again when you've been away for the time you choose (Settings: from "any time I leave the app" to 1 hour; the default is 5 minutes). The <b>🔒</b> button at the top locks it at once.</li>
+        <li>After 5 wrong tries it makes you wait, longer each time.</li>
+      </ul>
+      <h4>Change it, or if you forget it</h4>
+      <ul>
+        <li><b>Change password:</b> Settings → Password lock → <b>Change password</b> (asks for the current one). Your recovery code keeps working.</li>
+        <li><b>Forgot the password:</b> lock screen → <b>Show my hint</b>, or <b>Forgot password?</b> → enter the recovery code and a new password. You then get a <b>new</b> recovery code to save (the used one stops working).</li>
+        <li><b>Lost the recovery code but still know the password:</b> Settings → <b>New recovery code</b>.</li>
+        <li><b>Lost both:</b> lock screen → Forgot password? → <b>Lost the recovery code too?</b> This erases the journal on this device only and removes the lock. Your trades come back from <b>sync</b> (reconnect with a new GitHub token) or from a <b>backup file</b>.</li>
+      </ul>
+      <p class="why"><b>Why there's no "email me a reset link":</b> the journal has no server: everything stays on your devices. That's also why the recovery code matters: keep it somewhere safe that isn't this device.</p>
+      <p class="small muted">Good to know: the lock hides the journal, but it doesn't encrypt the data stored in the browser. A determined expert with your unlocked computer could still dig into the browser's files. For full protection, also lock the phone or laptop itself.</p>
+    </details>
+
     <details id="h-faq">
       <summary>12. Common problems</summary>
       <table class="help-table">
@@ -799,7 +931,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
 /* =========================================================================
    Constants
    ========================================================================= */
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.8';
 const SCHEMA_VERSION = 1;
 const BACKUP_APP_ID = 'xauusd-trade-journal';
 const CLOSED = new Set(['Win', 'Loss', 'Breakeven']);
@@ -2251,6 +2383,192 @@ function applyAiResult(r, blob) {
 }
 
 /* =========================================================================
+   Password lock (per device). Only a salted PBKDF2 hash of the password and
+   of the recovery code is stored, in IndexedDB meta/lock. Never synced or
+   exported. It hides the journal from anyone using this device; it does not
+   encrypt the data stored in the browser.
+   ========================================================================= */
+const LOCK_ITERATIONS = 200000;
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I: easy to copy by hand
+function bufToB64(buf) { return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+function b64ToBuf(b64) { return Uint8Array.from(atob(b64), c => c.charCodeAt(0)); }
+async function pbkdf2(secret, saltB64, iterations) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), 'PBKDF2', false, ['deriveBits']);
+  return bufToB64(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: b64ToBuf(saltB64), iterations }, key, 256));
+}
+const newSalt = () => bufToB64(crypto.getRandomValues(new Uint8Array(16)));
+function makeRecoveryCode() {
+  const r = crypto.getRandomValues(new Uint8Array(16));
+  return [...r].map(x => CODE_ALPHABET[x % CODE_ALPHABET.length]).join('').match(/.{4}/g).join('-');
+}
+const normCode = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+function passwordProblem(pw1, pw2) {
+  if (pw1.length < 6) return 'Use at least 6 characters.';
+  if (pw1 !== pw2) return 'The two passwords are not the same.';
+  return '';
+}
+
+const appLock = (() => {
+  let cfg = null, locked = false, hiddenAt = null, fails = 0, waitUntil = 0, unlockWaiters = [], authMode = null;
+  const enabled = () => !!(cfg && cfg.hash);
+  const supported = () => !!(window.crypto && crypto.subtle);
+  async function load() { cfg = (await store.get('meta', 'lock')) || null; render(); }
+  async function save(next) { await store.put('meta', next); cfg = next; render(); }
+  const checkPassword = async pw => enabled() && (await pbkdf2(pw, cfg.salt, cfg.iterations)) === cfg.hash;
+  const checkCode = async code => enabled() && normCode(code).length === 16 && (await pbkdf2(normCode(code), cfg.recSalt, cfg.iterations)) === cfg.recHash;
+  async function passwordFields(pw) { const salt = newSalt(); return { salt, hash: await pbkdf2(pw, salt, LOCK_ITERATIONS), iterations: LOCK_ITERATIONS }; }
+  async function codeFields() { const code = makeRecoveryCode(), recSalt = newSalt(); return { code, fields: { recSalt, recHash: await pbkdf2(normCode(code), recSalt, LOCK_ITERATIONS) } }; }
+
+  function render() {
+    const on = enabled();
+    $('lockOff').classList.toggle('hidden', on || !supported());
+    $('lockOn').classList.toggle('hidden', !on);
+    $('lockUnsupported').classList.toggle('hidden', supported());
+    $('lockBtn').classList.toggle('hidden', !on);
+    if (on) $('s-lockAfter').value = String(cfg.autoLockMin ?? 5);
+  }
+  function showCode(code) {
+    $('recCodeShow').textContent = code; $('recSaved').checked = false; $('recDone').disabled = true;
+    $('recModal').classList.remove('hidden');
+  }
+
+  function lock() {
+    if (!enabled()) return;
+    locked = true; hiddenAt = null;
+    if (!$('lightbox').classList.contains('hidden')) closeLightbox();
+    if (!$('help').classList.contains('hidden')) closeHelp();
+    document.body.classList.add('locked');
+    $('lockForm').classList.remove('hidden'); $('recoverForm').classList.add('hidden'); $('lostAllBox').classList.add('hidden');
+    ['lockPw', 'recCode', 'recPw1', 'recPw2', 'eraseConfirm'].forEach(id => { $(id).value = ''; });
+    ['lockErr', 'recErr', 'lockHint'].forEach(id => { $(id).textContent = ''; });
+    $('lockHintBtn').classList.toggle('hidden', !cfg.hint);
+    $('lockScreen').classList.remove('hidden');
+    setTimeout(() => $('lockPw').focus(), 50);
+  }
+  function finishUnlock() {
+    locked = false; fails = 0; waitUntil = 0;
+    $('lockScreen').classList.add('hidden'); document.body.classList.remove('locked');
+    const w = unlockWaiters; unlockWaiters = []; w.forEach(f => f());
+  }
+  const waitForUnlock = () => locked ? new Promise(r => unlockWaiters.push(r)) : Promise.resolve();
+  function tooSoon(errId) {
+    const left = Math.ceil((waitUntil - Date.now()) / 1000);
+    if (left > 0) { $(errId).textContent = `Too many wrong tries. Wait ${left} seconds, then try again.`; return true; }
+    return false;
+  }
+  function noteFail(errId, what) {
+    fails++;
+    if (fails >= 5) { waitUntil = Date.now() + 30000 * 2 ** (fails - 5); tooSoon(errId); }
+    else $(errId).textContent = `Wrong ${what}. Try again.`;
+  }
+  async function tryUnlock() {
+    if (tooSoon('lockErr')) return;
+    $('lockGo').disabled = true;
+    try { if (await checkPassword($('lockPw').value)) finishUnlock(); else { noteFail('lockErr', 'password'); $('lockPw').select(); } }
+    finally { $('lockGo').disabled = false; }
+  }
+  async function tryRecover() {
+    if (tooSoon('recErr')) return;
+    const p = passwordProblem($('recPw1').value, $('recPw2').value);
+    if (!(await checkCode($('recCode').value))) { noteFail('recErr', 'recovery code'); return; }
+    if (p) { $('recErr').textContent = p; return; }
+    // The used code is replaced by a fresh one.
+    const { code, fields } = await codeFields();
+    await save(Object.assign({}, cfg, await passwordFields($('recPw1').value), fields, { setAt: new Date().toISOString() }));
+    finishUnlock(); showCode(code); toast('New password set');
+  }
+  async function eraseDevice() {
+    if ($('eraseConfirm').value.trim().toUpperCase() !== 'ERASE') { $('recErr').textContent = 'Type ERASE in the box to confirm.'; return; }
+    const syncCfg = await store.get('meta', 'sync');
+    const ops = [{ op: 'clear', store: 'trades' }, { op: 'clear', store: 'shots' }, { op: 'delete', store: 'meta', key: 'lock' }, { op: 'delete', store: 'meta', key: 'ai' }];
+    if (syncCfg) ops.push({ op: 'put', store: 'meta', value: Object.assign({}, syncCfg, { token: null }) });
+    await store.batch(ops);
+    location.reload();
+  }
+
+  // Settings actions
+  async function setPassword() {
+    const p = passwordProblem($('s-lockPw1').value, $('s-lockPw2').value);
+    if (p) { $('lockSetErr').textContent = p; return; }
+    $('lockSet').disabled = true;
+    try {
+      const { code, fields } = await codeFields();
+      await save(Object.assign({ key: 'lock', hint: $('s-lockHint').value.trim(), autoLockMin: 5, setAt: new Date().toISOString() }, await passwordFields($('s-lockPw1').value), fields));
+      ['s-lockPw1', 's-lockPw2', 's-lockHint'].forEach(id => { $(id).value = ''; }); $('lockSetErr').textContent = '';
+      showCode(code); toast('Password lock is on');
+    } catch (err) { $('lockSetErr').textContent = 'Not saved. ' + storageAdvice(err); }
+    finally { $('lockSet').disabled = false; }
+  }
+  function openAuth(mode) {
+    authMode = mode;
+    $('lockAuthBox').classList.remove('hidden');
+    $('lockNewWrap').classList.toggle('hidden', mode !== 'change');
+    ['s-lockCur', 's-lockNew1', 's-lockNew2'].forEach(id => { $(id).value = ''; });
+    $('s-lockNewHint').value = cfg.hint || '';
+    $('lockAuthErr').textContent = '';
+    $('lockAuthGo').textContent = { change: 'Save new password', code: 'Make a new recovery code', off: 'Turn off the lock' }[mode];
+    $('lockAuthGo').className = 'btn small ' + (mode === 'off' ? 'danger' : 'primary');
+    $('s-lockCur').focus();
+  }
+  const closeAuth = () => { authMode = null; $('lockAuthBox').classList.add('hidden'); };
+  async function confirmAuth() {
+    if (tooSoon('lockAuthErr')) return;
+    if (!(await checkPassword($('s-lockCur').value))) { noteFail('lockAuthErr', 'current password'); return; }
+    fails = 0;
+    if (authMode === 'change') {
+      const p = passwordProblem($('s-lockNew1').value, $('s-lockNew2').value);
+      if (p) { $('lockAuthErr').textContent = p; return; }
+      await save(Object.assign({}, cfg, await passwordFields($('s-lockNew1').value), { hint: $('s-lockNewHint').value.trim(), setAt: new Date().toISOString() }));
+      closeAuth(); toast('Password changed. Your recovery code still works.');
+    } else if (authMode === 'code') {
+      const { code, fields } = await codeFields();
+      await save(Object.assign({}, cfg, fields)); closeAuth(); showCode(code);
+    } else if (authMode === 'off') {
+      await store.delete('meta', 'lock'); cfg = null; render(); closeAuth(); toast('Password lock turned off');
+    }
+  }
+  async function setAutoLock(min) { await save(Object.assign({}, cfg, { autoLockMin: Number(min) })); }
+
+  // Lock again after being away.
+  function onVisibility() {
+    if (!enabled() || locked) return;
+    if (document.visibilityState === 'hidden') { hiddenAt = Date.now(); if ((cfg.autoLockMin ?? 5) === 0) lock(); }
+    else if (hiddenAt && Date.now() - hiddenAt >= (cfg.autoLockMin ?? 5) * 60000) lock();
+  }
+  return { load, render, enabled, supported, isLocked: () => locked, lock, waitForUnlock, tryUnlock, tryRecover, eraseDevice,
+    setPassword, openAuth, closeAuth, confirmAuth, setAutoLock, onVisibility, hint: () => (cfg && cfg.hint) || '' };
+})();
+
+function wireLock() {
+  $('lockForm').addEventListener('submit', e => { e.preventDefault(); appLock.tryUnlock(); });
+  $('recoverForm').addEventListener('submit', e => { e.preventDefault(); appLock.tryRecover(); });
+  $('lockPwShow').addEventListener('click', () => { const t = $('lockPw'); const show = t.type === 'password'; t.type = show ? 'text' : 'password'; $('lockPwShow').textContent = show ? 'Hide' : 'Show'; t.focus(); });
+  $('lockHintBtn').addEventListener('click', () => { $('lockHint').textContent = 'Hint: ' + appLock.hint(); });
+  $('lockForgot').addEventListener('click', () => { $('lockForm').classList.add('hidden'); $('recoverForm').classList.remove('hidden'); $('recCode').focus(); });
+  $('recBack').addEventListener('click', () => { $('recoverForm').classList.add('hidden'); $('lockForm').classList.remove('hidden'); $('lockPw').focus(); });
+  $('lockLostAll').addEventListener('click', () => $('lostAllBox').classList.toggle('hidden'));
+  $('eraseGo').addEventListener('click', () => appLock.eraseDevice());
+  $('recSaved').addEventListener('change', e => { $('recDone').disabled = !e.target.checked; });
+  $('recDone').addEventListener('click', () => { $('recModal').classList.add('hidden'); $('recCodeShow').textContent = ''; });
+  $('recCopy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText($('recCodeShow').textContent); toast('Recovery code copied'); }
+    catch (e) { toast('Copy did not work here: write the code down instead.', true); }
+  });
+  $('recDownload').addEventListener('click', () => downloadBlob(new Blob([
+    `Trade Journal recovery code\r\n\r\n${$('recCodeShow').textContent}\r\n\r\nCreated ${fmtDate(todayStr())} on this device: ${deviceKind()}.\r\nUse it on the lock screen: "Forgot password?". Keep it private.\r\n`], { type: 'text/plain' }), 'trade-journal-recovery-code.txt'));
+  $('lockSet').addEventListener('click', () => appLock.setPassword());
+  $('lockNow').addEventListener('click', () => appLock.lock());
+  $('lockBtn').addEventListener('click', () => appLock.lock());
+  $('lockChangeOpen').addEventListener('click', () => appLock.openAuth('change'));
+  $('lockNewCodeOpen').addEventListener('click', () => appLock.openAuth('code'));
+  $('lockOffOpen').addEventListener('click', () => appLock.openAuth('off'));
+  $('lockAuthCancel').addEventListener('click', () => appLock.closeAuth());
+  $('lockAuthGo').addEventListener('click', () => appLock.confirmAuth());
+  $('s-lockAfter').addEventListener('change', e => appLock.setAutoLock(e.target.value));
+  document.addEventListener('visibilitychange', () => appLock.onVisibility());
+}
+
+/* =========================================================================
    Sync between devices, through a PRIVATE GitHub repository.
    Remote layout:  journal.json (all trades + settings), shots/<id>.<ext>,
    conflicts/ (copies of versions that lost a same-trade edit clash).
@@ -2572,7 +2890,7 @@ function wire() {
   $('aiRemove').addEventListener('click', () => { if (confirm('Remove the Claude API key from this device?')) aiReader.removeKey(); });
   // Paste screenshots (laptop): goes to the highlighted step or General.
   document.addEventListener('paste', e => {
-    if (currentTab !== 'form' || !e.clipboardData) return;
+    if (currentTab !== 'form' || !e.clipboardData || appLock.isLocked()) return;
     const files = [...e.clipboardData.items].filter(i => i.kind === 'file' && /^image\//.test(i.type)).map(i => i.getAsFile()).filter(Boolean);
     if (!files.length) return;
     e.preventDefault();
@@ -2630,6 +2948,7 @@ function wire() {
   $('lightbox').addEventListener('click', e => { if (e.target === $('lightbox')) closeLightbox(); });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
+    if (appLock.isLocked()) return;
     if (!$('lightbox').classList.contains('hidden')) closeLightbox();
     else if (!$('help').classList.contains('hidden')) closeHelp();
   });
@@ -2650,7 +2969,7 @@ function wire() {
 
 async function init() {
   $('appVersion').textContent = 'v' + APP_VERSION;
-  wire();
+  wire(); wireLock();
   try {
     await store.open();
     await loadAll();
@@ -2661,6 +2980,9 @@ async function init() {
     return;
   }
   applyTheme(); renderThemeSeg();
+  // With a password set, nothing is shown until it is entered.
+  try { await appLock.load(); } catch (e) { /* no lock record readable: open normally */ }
+  if (appLock.enabled()) { appLock.lock(); await appLock.waitForUnlock(); }
   ckWork = clone(settings.checklist); renderCkEditor(); renderLimits();
   resetForm();
   refreshAll();

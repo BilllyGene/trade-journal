@@ -133,6 +133,10 @@ Changing the checklist only affects **new** trades. Old trades always keep the s
 - **R:R, Risk, P&L and Outcome fill themselves** from the prices and lot size, for gold, silver and forex pairs (blue boxes). P&L is an estimate: MT5 adds commission and swap, so type MT5's figure over it if it differs. For indices or crypto, set "Money per 1.00 price move" in Settings.
 - **📷 Fill from screenshot** (Log trade tab) sends a trade screenshot to Claude (Anthropic's AI), which fills the boxes for you to check (yellow boxes). Boxes you already typed are never overwritten. It needs your own Claude API key from console.anthropic.com (Settings → Read trades from screenshots) and costs roughly 2–4 US cents per screenshot. The key stays on the device where you enter it.
 
+## Password lock
+
+Settings → **Password lock** locks the journal on each device with a password, like a banking app. It opens to a lock screen and locks again after you've been away (you choose how long). When you set it you get a **recovery code**: save it somewhere that isn't the device. Forgot the password? The lock screen offers your hint, then the recovery code. Lost both? You can erase that device's copy and get your trades back from sync or a backup file. People you share the link with never see your trades: those live only in your own browser and private sync storage.
+
 ## 8. Turn on GitHub Pages (one time)
 
 1. On GitHub, open this repository.
